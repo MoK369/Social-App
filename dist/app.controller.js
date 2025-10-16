@@ -5,6 +5,7 @@ import { rateLimit } from "express-rate-limit";
 import authRouter from "./modules/auth/auth.controller.js";
 import morgan from "morgan";
 import { MoodEnum } from "./utils/constants/enum.constants.js";
+import globalErrorHandler from "./utils/handlers/global.error.handler.js";
 function bootstrap() {
     const app = express();
     app.use(cors());
@@ -23,8 +24,11 @@ function bootstrap() {
     });
     app.use("/auth", authRouter);
     app.use("{/*dummy}", (req, res) => {
-        res.status(404).json({ error: `Wrong ROUTE ${req.baseUrl} or METHOD ${req.method} 😵` });
+        res
+            .status(404)
+            .json({ error: `Wrong ROUTE ${req.baseUrl} or METHOD ${req.method} 😵` });
     });
+    app.use(globalErrorHandler);
     app.listen(process.env.PORT, () => {
         console.log(`Server is running on port ${process.env.PORT} 🚀`);
     });
