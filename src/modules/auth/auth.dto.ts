@@ -1,5 +1,4 @@
-export interface ISignupDto {
-  username: string;
-  email: string;
-  password: string;
-}
+import { z } from "zod";
+import authValidators from "./auth.validation.ts";
+
+export type SignupDtoType = z.infer<typeof authValidators.signup.body>;

@@ -13,7 +13,7 @@ const globalErrorHandler = (
   console.error(err.stack);
   res.status(err.statusCode || 500).json({
     errorMessage: err.message || "Something went wrong! 🤔",
-    error: err,
+    error: err.cause,
   });
 };
 
