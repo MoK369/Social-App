@@ -8,6 +8,7 @@ import morgan from "morgan";
 import { MoodEnum } from "./utils/constants/enum.constants.ts";
 import globalErrorHandler from "./utils/handlers/global.error.handler.ts";
 import connectDB from "./db/db.connection.ts";
+import UserModel from "./db/models/user.model.ts";
 
 async function bootstrap(): Promise<void> {
   const app: Express = express();
@@ -34,6 +35,7 @@ async function bootstrap(): Promise<void> {
       });
     });
   } else {
+    await UserModel.syncIndexes();
     app.use(express.json());
     app.get("/", (req: Request, res: Response) => {
       res.json({

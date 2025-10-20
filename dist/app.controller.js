@@ -7,6 +7,7 @@ import morgan from "morgan";
 import { MoodEnum } from "./utils/constants/enum.constants.js";
 import globalErrorHandler from "./utils/handlers/global.error.handler.js";
 import connectDB from "./db/db.connection.js";
+import UserModel from "./db/models/user.model.js";
 async function bootstrap() {
     const app = express();
     app.use(cors());
@@ -26,6 +27,7 @@ async function bootstrap() {
         });
     }
     else {
+        await UserModel.syncIndexes();
         app.use(express.json());
         app.get("/", (req, res) => {
             res.json({
