@@ -1,4 +1,4 @@
-import type { Types } from "mongoose";
+import type { HydratedDocument, Types } from "mongoose";
 import type { GenderEnum, UserRoleEnum } from "../../utils/constants/enum.constants.ts";
 
 export interface IUser {
@@ -22,7 +22,7 @@ export interface IUser {
   };
   changeCredentialsTime?: Date;
 
-  phoneNumber: string;
+  phone: string;
 
   gender: GenderEnum;
   role: UserRoleEnum;
@@ -31,3 +31,5 @@ export interface IUser {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type HIUser = HydratedDocument<IUser>;

@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     changeCredentialsTime: { type: Date },
 
-    phoneNumber: { type: String, required: true },
+    phone: { type: String, required: true },
 
     gender: {
       type: String,

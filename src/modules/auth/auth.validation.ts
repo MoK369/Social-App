@@ -1,5 +1,6 @@
 import { z } from "zod";
 import generalValidationFields from "../../utils/constants/validation.constants.ts";
+import { GenderEnum } from "../../utils/constants/enum.constants.ts";
 
 const login = {
   body: z.strictObject({
@@ -11,7 +12,12 @@ const login = {
 const signup = {
   body: login.body
     .extend({
-      username: z.string().min(3).max(30),
+      fullName: z.string().min(3).max(30),
+      phone: generalValidationFields.phone,
+      gender: z.enum(
+        Object.values(GenderEnum),
+        `Invalid gender. Expected values are ${Object.values(GenderEnum)}`
+      ),
       confirmPassword: z.string(),
     })
     .superRefine((data, ctx) => {

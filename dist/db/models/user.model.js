@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
         expiresAt: { type: Date },
     },
     changeCredentialsTime: { type: Date },
-    phoneNumber: { type: String, required: true },
+    phone: { type: String, required: true },
     gender: {
         type: String,
         enum: Object.values(GenderEnum),
