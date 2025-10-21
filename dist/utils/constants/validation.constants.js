@@ -1,5 +1,6 @@
 import { z } from "zod";
 const generalValidationFields = {
+    phone: z.string().regex(/^(002|\+2)?01[0125][0-9]{8}$/),
     password: z
         .string()
         .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/),
