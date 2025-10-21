@@ -24,3 +24,10 @@ export class NotFoundException extends ApplicatonException {
     Error.captureStackTrace(this, this.constructor);
   }
 }
+export class ConflictException extends ApplicatonException {
+  constructor(message: string, cause?: unknown) {
+    super(message, 409, cause);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}

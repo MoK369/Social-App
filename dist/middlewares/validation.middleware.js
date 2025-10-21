@@ -1,8 +1,6 @@
 import { BadRequestException } from "../utils/exceptions/custom.exceptions.js";
 const validationMiddleware = (schema) => {
     return async (req, res, next) => {
-        console.log(schema);
-        console.log(Object.keys(schema));
         let validationError = {};
         for (const key of Object.keys(schema)) {
             if (!schema[key])

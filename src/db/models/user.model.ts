@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema<IUser>(
     firstName: { type: String, required: true, minlength: 2, maxlength: 25 },
     lastName: { type: String, required: true, minlength: 2, maxlength: 25 },
 
-    email: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true, },
     confirmEmailOtp: {
       code: { type: String },
       expiresAt: { type: Date },

@@ -15,9 +15,6 @@ const validationMiddleware = (schema: SchemaType) => {
     res: Response,
     next: NextFunction
   ): Promise<void> => {
-    console.log(schema);
-    console.log(Object.keys(schema));
-
     let validationError: Partial<Record<KeyReqType, IsssueObjectType[]>> = {};
 
     for (const key of Object.keys(schema) as KeyReqType[]) {
