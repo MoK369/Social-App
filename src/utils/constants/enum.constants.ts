@@ -19,10 +19,22 @@ export enum ErrorCodesEnum {
   INVALID_INPUT = "INVALID_INPUT",
   MISSING_PARAMETERS = "MISSING_PARAMETERS",
   RESOURCE_NOT_FOUND = "RESOURCE_NOT_FOUND",
-  CONFLICT_ERROR="CONFLICT_ERROR"
+  CONFLICT_ERROR = "CONFLICT_ERROR",
+  UNAUTHORIZED = "UNAUTHORIZED",
+  FORBIDDEN = "FORBIDDEN",
 }
 
 export enum EventsEnum {
   verifyEmail = "verifyEmail",
   resetPassword = "resetPassword",
+}
+
+export enum SignatureLevelsEnum {
+  Bearer = "Bearar",
+  System = "System",
+}
+
+export enum TokenTypesEnum {
+  access = "access",
+  refresh = "refresh",
 }

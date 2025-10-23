@@ -90,19 +90,11 @@ class AuthenticationService {
         }))) {
             throw new NotFoundException("Invalid Login Credentials");
         }
-        const accessToken = Token.generate({ payload: { id: user.id } });
-        const refreshToken = Token.generate({
-            payload: { id: user.id },
-            secret: process.env.REFRESH_USER_TOKEN_SIGNATURE,
-            options: {
-                expiresIn: Number(process.env.ACCESS_TOKEN_EXPIRES_IN),
-            },
-        });
+        const tokenCredentials = Token.getTokensBasedOnRole({ user });
         return res.json({
             message: "User logged in successfully",
             body: {
-                accessToken,
-                refreshToken,
+                ...tokenCredentials,
                 user,
             },
         });

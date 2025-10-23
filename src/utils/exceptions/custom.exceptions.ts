@@ -44,3 +44,19 @@ export class ConflictException extends ApplicatonException {
     Error.captureStackTrace(this, this.constructor);
   }
 }
+
+export class UnauthorizedException extends ApplicatonException {
+  constructor(message: string, details?: IssueObjectType[], cause?: unknown) {
+    super(ErrorCodesEnum.UNAUTHORIZED, message, 401, details, cause);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class ForbiddenException extends ApplicatonException {
+  constructor(message: string, details?: IssueObjectType[], cause?: unknown) {
+    super(ErrorCodesEnum.FORBIDDEN, message, 403, details, cause);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
