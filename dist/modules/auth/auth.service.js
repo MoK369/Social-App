@@ -1,19 +1,34 @@
 import UserRepository from "../../db/repository/user.respository.js";
 import UserModel from "../../db/models/user.model.js";
 import { ConflictException } from "../../utils/exceptions/custom.exceptions.js";
+import successHandler from "../../utils/handlers/success.handler.js";
+import Hashing from "../../utils/security/hash.security.js";
+import sendEmail from "../../utils/email/send.email.js";
 class AuthenticationService {
     userRepository = new UserRepository(UserModel);
     signup = async (req, res) => {
         let { fullName, email, password, phone, gender } = req.body;
         const user = await this.userRepository.findByEmail({ email });
-        console.log({ user });
         if (user) {
             throw new ConflictException("Email Already Exists!");
         }
         await this.userRepository.create({
-            data: [{ fullName, email, password, phone, gender }],
+            data: [
+                {
+                    fullName,
+                    email,
+                    password: await Hashing.generateHash({ plainText: password }),
+                    phone,
+                    gender,
+                },
+            ],
         });
-        return res.status(201).json({ message: "User signed up successfully" });
+        await sendEmail({ data: { to: email, html: `<h1>Hello from Social App 👋</h1>` } });
+        return successHandler({
+            res,
+            statusCode: 201,
+            message: "Account Created Succcessfully!",
+        });
     };
     login = async (req, res) => {
         return res.json({ message: "User logged in successfully", body: req.body });
