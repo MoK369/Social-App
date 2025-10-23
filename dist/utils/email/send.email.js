@@ -1,8 +1,9 @@
 import { createTransport } from "nodemailer";
 import { ApplicatonException } from "../exceptions/custom.exceptions.js";
+import { ErrorCodesEnum } from "../constants/enum.constants.js";
 const sendEmail = ({ data, }) => {
     if (!data.html && !data.attachments?.length && !data.text) {
-        throw new ApplicatonException("Can't Send Email, because Email Content is Missing", 500);
+        throw new ApplicatonException(ErrorCodesEnum.RESOURCE_NOT_FOUND, "Can't Send Email, because Email Content is Missing", 500);
     }
     const transporter = createTransport({
         host: "smtp.gmail.com",

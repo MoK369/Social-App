@@ -2,6 +2,7 @@ import { createTransport } from "nodemailer";
 import type Mail from "nodemailer/lib/mailer/index.js";
 import type SMTPTransport from "nodemailer/lib/smtp-transport/index.js";
 import { ApplicatonException } from "../exceptions/custom.exceptions.ts";
+import { ErrorCodesEnum } from "../constants/enum.constants.ts";
 
 const sendEmail = ({
   data,
@@ -10,6 +11,7 @@ const sendEmail = ({
 }): Promise<SMTPTransport.SentMessageInfo> => {
   if (!data.html && !data.attachments?.length && !data.text) {
     throw new ApplicatonException(
+      ErrorCodesEnum.RESOURCE_NOT_FOUND,
       "Can't Send Email, because Email Content is Missing",
       500
     );

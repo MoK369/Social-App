@@ -7,8 +7,11 @@ import sendEmail from "../../utils/email/send.email.js";
 class AuthenticationService {
     userRepository = new UserRepository(UserModel);
     signup = async (req, res) => {
-        let { fullName, email, password, phone, gender } = req.body;
+        const { fullName, email, password, phone, gender } = req.body;
         const user = await this.userRepository.findByEmail({ email });
+        let value = "hello";
+        let num = value;
+        console.log(num.toFixed(2));
         if (user) {
             throw new ConflictException("Email Already Exists!");
         }

@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import type { SignupDtoType } from "./auth.dto.ts";
 import UserRepository from "../../db/repository/user.respository.ts";
 import UserModel from "../../db/models/user.model.ts";
-import { ConflictException } from "../../utils/exceptions/custom.exceptions.ts";
+import {ConflictException } from "../../utils/exceptions/custom.exceptions.ts";
 import successHandler from "../../utils/handlers/success.handler.ts";
 import Hashing from "../../utils/security/hash.security.ts";
 import sendEmail from "../../utils/email/send.email.ts";
@@ -11,8 +11,13 @@ class AuthenticationService {
   private userRepository = new UserRepository(UserModel);
 
   signup = async (req: Request, res: Response): Promise<Response> => {
-    let { fullName, email, password, phone, gender }: SignupDtoType = req.body;
+    const { fullName, email, password, phone, gender }: SignupDtoType = req.body;
     const user = await this.userRepository.findByEmail({ email });
+    let value: any = "hello";
+    let num: number = value as number; // TypeScript trusts you, but at runtime, num is still a string
+    console.log(num.toFixed(2)); // Runtime error: num.toFixed is not a function
+    
+    
     if (user) {
       throw new ConflictException("Email Already Exists!");
     }
