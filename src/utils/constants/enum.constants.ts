@@ -21,3 +21,8 @@ export enum ErrorCodesEnum {
   RESOURCE_NOT_FOUND = "RESOURCE_NOT_FOUND",
   CONFLICT_ERROR="CONFLICT_ERROR"
 }
+
+export enum EventsEnum {
+  verifyEmail = "verifyEmail",
+  resetPassword = "resetPassword",
+}

@@ -22,3 +22,8 @@ export var ErrorCodesEnum;
     ErrorCodesEnum["RESOURCE_NOT_FOUND"] = "RESOURCE_NOT_FOUND";
     ErrorCodesEnum["CONFLICT_ERROR"] = "CONFLICT_ERROR";
 })(ErrorCodesEnum || (ErrorCodesEnum = {}));
+export var EventsEnum;
+(function (EventsEnum) {
+    EventsEnum["verifyEmail"] = "verifyEmail";
+    EventsEnum["resetPassword"] = "resetPassword";
+})(EventsEnum || (EventsEnum = {}));

@@ -25,9 +25,17 @@ const signup = {
     }),
 };
 
+const confirmEmail = {
+  body: z.strictObject({
+    email: z.email(),
+    otp: generalValidationFields.otp,
+  }),
+};
+
 const authValidators = {
   login,
   signup,
+  confirmEmail,
 };
 
 export default authValidators;

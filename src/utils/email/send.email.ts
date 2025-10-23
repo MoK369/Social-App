@@ -17,10 +17,10 @@ const sendEmail = ({
     );
   }
   const transporter = createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true, // true for 465, false for other ports
-    service: "gmail",
+    host: process.env.HOST,
+    port: Number(process.env.EMAIL_PORT),
+    secure: Boolean(process.env.IS_SECURE),
+    service: process.env.SERVICE,
     auth: {
       user: process.env.SENDER_EMAIL,
       pass: process.env.APP_PASS,

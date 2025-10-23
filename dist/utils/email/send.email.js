@@ -6,10 +6,10 @@ const sendEmail = ({ data, }) => {
         throw new ApplicatonException(ErrorCodesEnum.RESOURCE_NOT_FOUND, "Can't Send Email, because Email Content is Missing", 500);
     }
     const transporter = createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        service: "gmail",
+        host: process.env.HOST,
+        port: Number(process.env.EMAIL_PORT),
+        secure: Boolean(process.env.IS_SECURE),
+        service: process.env.SERVICE,
         auth: {
             user: process.env.SENDER_EMAIL,
             pass: process.env.APP_PASS,
