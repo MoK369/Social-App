@@ -1,11 +1,12 @@
 import UserRepository from "../../db/repository/user.respository.js";
 import UserModel from "../../db/models/user.model.js";
-import { BadRequestException, ConflictException, } from "../../utils/exceptions/custom.exceptions.js";
+import { BadRequestException, ConflictException, NotFoundException, } from "../../utils/exceptions/custom.exceptions.js";
 import successHandler from "../../utils/handlers/success.handler.js";
 import Hashing from "../../utils/security/hash.security.js";
 import { EventsEnum } from "../../utils/constants/enum.constants.js";
 import { generateNumaricOTP } from "../../utils/security/otp.security.js";
 import emailEvent from "../../utils/events/email.event.js";
+import Token from "../../utils/security/token.security.js";
 class AuthenticationService {
     userRepository = new UserRepository(UserModel);
     signup = async (req, res) => {
@@ -73,7 +74,38 @@ class AuthenticationService {
         return successHandler({ res, message: "Account Verified!" });
     };
     login = async (req, res) => {
-        return res.json({ message: "User logged in successfully", body: req.body });
+        const { email, password } = req.body;
+        const user = await this.userRepository.findByEmail({
+            email,
+        });
+        if (!user) {
+            throw new NotFoundException("Invalid Login Credentials");
+        }
+        if (!user.confirmedAt) {
+            throw new BadRequestException("Email Not Verified");
+        }
+        if (!(await Hashing.compareHash({
+            plainText: password,
+            cipherText: user.password,
+        }))) {
+            throw new NotFoundException("Invalid Login Credentials");
+        }
+        const accessToken = Token.generate({ payload: { id: user.id } });
+        const refreshToken = Token.generate({
+            payload: { id: user.id },
+            secret: process.env.REFRESH_USER_TOKEN_SIGNATURE,
+            options: {
+                expiresIn: Number(process.env.ACCESS_TOKEN_EXPIRES_IN),
+            },
+        });
+        return res.json({
+            message: "User logged in successfully",
+            body: {
+                accessToken,
+                refreshToken,
+                user,
+            },
+        });
     };
 }
 export default new AuthenticationService();

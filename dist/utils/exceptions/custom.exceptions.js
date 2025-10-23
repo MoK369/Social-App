@@ -31,8 +31,8 @@ export class ValidationException extends ApplicatonException {
     }
 }
 export class NotFoundException extends ApplicatonException {
-    constructor(notFoundItem, details, cause) {
-        super(ErrorCodesEnum.RESOURCE_NOT_FOUND, `${notFoundItem} Not Found`, 404, details, cause);
+    constructor(message, details, cause) {
+        super(ErrorCodesEnum.RESOURCE_NOT_FOUND, message, 404, details, cause);
         this.name = this.constructor.name;
         Error.captureStackTrace(this, this.constructor);
     }
