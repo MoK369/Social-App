@@ -16,11 +16,7 @@ export class ApplicatonException extends Error {
 }
 
 export class BadRequestException extends ApplicatonException {
-  constructor(
-    message: string,
-    details?: IssueObjectType[],
-    cause?: unknown
-  ) {
+  constructor(message: string, details?: IssueObjectType[], cause?: unknown) {
     super(ErrorCodesEnum.INVALID_INPUT, message, 400, details, cause);
     this.name = this.constructor.name;
     Error.captureStackTrace(this, this.constructor);
@@ -28,34 +24,38 @@ export class BadRequestException extends ApplicatonException {
 }
 
 export class ValidationException extends ApplicatonException {
-  constructor(
-    message: string,
-    details?: IssueObjectType[],
-    cause?: unknown
-  ) {
+  constructor(message: string, details?: IssueObjectType[], cause?: unknown) {
     super(ErrorCodesEnum.VALIDATION_ERROR, message, 400, details, cause);
     this.name = this.constructor.name;
     Error.captureStackTrace(this, this.constructor);
   }
 }
 export class NotFoundException extends ApplicatonException {
-  constructor(
-    notFoundItem: string,
-    details?: IssueObjectType[],
-    cause?: unknown
-  ) {
-    super(ErrorCodesEnum.RESOURCE_NOT_FOUND, `${notFoundItem} Not Found`, 404, details, cause);
+  constructor(message: string, details?: IssueObjectType[], cause?: unknown) {
+    super(ErrorCodesEnum.RESOURCE_NOT_FOUND, message, 404, details, cause);
     this.name = this.constructor.name;
     Error.captureStackTrace(this, this.constructor);
   }
 }
 export class ConflictException extends ApplicatonException {
-  constructor(
-    message: string,
-    details?: IssueObjectType[],
-    cause?: unknown
-  ) {
+  constructor(message: string, details?: IssueObjectType[], cause?: unknown) {
     super(ErrorCodesEnum.CONFLICT_ERROR, message, 409, details, cause);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class UnauthorizedException extends ApplicatonException {
+  constructor(message: string, details?: IssueObjectType[], cause?: unknown) {
+    super(ErrorCodesEnum.UNAUTHORIZED, message, 401, details, cause);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class ForbiddenException extends ApplicatonException {
+  constructor(message: string, details?: IssueObjectType[], cause?: unknown) {
+    super(ErrorCodesEnum.FORBIDDEN, message, 403, details, cause);
     this.name = this.constructor.name;
     Error.captureStackTrace(this, this.constructor);
   }

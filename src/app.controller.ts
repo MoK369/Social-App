@@ -3,12 +3,12 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
-import authRouter from "./modules/auth/auth.controller.ts";
 import morgan from "morgan";
 import { MoodEnum } from "./utils/constants/enum.constants.ts";
 import globalErrorHandler from "./utils/handlers/global.error.handler.ts";
 import connectDB from "./db/db.connection.ts";
 import UserModel from "./db/models/user.model.ts";
+import modulesRouter from "./modules/module.routes.ts";
 
 async function bootstrap(): Promise<void> {
   const app: Express = express();
@@ -43,7 +43,7 @@ async function bootstrap(): Promise<void> {
       });
     });
 
-    app.use("/auth", authRouter);
+    app.use("/api/v1", modulesRouter);
 
     app.use("{/*dummy}", (req: Request, res: Response) => {
       res.status(404).json({

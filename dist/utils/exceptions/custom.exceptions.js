@@ -31,8 +31,8 @@ export class ValidationException extends ApplicatonException {
     }
 }
 export class NotFoundException extends ApplicatonException {
-    constructor(notFoundItem, details, cause) {
-        super(ErrorCodesEnum.RESOURCE_NOT_FOUND, `${notFoundItem} Not Found`, 404, details, cause);
+    constructor(message, details, cause) {
+        super(ErrorCodesEnum.RESOURCE_NOT_FOUND, message, 404, details, cause);
         this.name = this.constructor.name;
         Error.captureStackTrace(this, this.constructor);
     }
@@ -40,6 +40,20 @@ export class NotFoundException extends ApplicatonException {
 export class ConflictException extends ApplicatonException {
     constructor(message, details, cause) {
         super(ErrorCodesEnum.CONFLICT_ERROR, message, 409, details, cause);
+        this.name = this.constructor.name;
+        Error.captureStackTrace(this, this.constructor);
+    }
+}
+export class UnauthorizedException extends ApplicatonException {
+    constructor(message, details, cause) {
+        super(ErrorCodesEnum.UNAUTHORIZED, message, 401, details, cause);
+        this.name = this.constructor.name;
+        Error.captureStackTrace(this, this.constructor);
+    }
+}
+export class ForbiddenException extends ApplicatonException {
+    constructor(message, details, cause) {
+        super(ErrorCodesEnum.FORBIDDEN, message, 403, details, cause);
         this.name = this.constructor.name;
         Error.captureStackTrace(this, this.constructor);
     }

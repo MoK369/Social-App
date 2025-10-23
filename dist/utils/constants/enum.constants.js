@@ -21,9 +21,21 @@ export var ErrorCodesEnum;
     ErrorCodesEnum["MISSING_PARAMETERS"] = "MISSING_PARAMETERS";
     ErrorCodesEnum["RESOURCE_NOT_FOUND"] = "RESOURCE_NOT_FOUND";
     ErrorCodesEnum["CONFLICT_ERROR"] = "CONFLICT_ERROR";
+    ErrorCodesEnum["UNAUTHORIZED"] = "UNAUTHORIZED";
+    ErrorCodesEnum["FORBIDDEN"] = "FORBIDDEN";
 })(ErrorCodesEnum || (ErrorCodesEnum = {}));
 export var EventsEnum;
 (function (EventsEnum) {
     EventsEnum["verifyEmail"] = "verifyEmail";
     EventsEnum["resetPassword"] = "resetPassword";
 })(EventsEnum || (EventsEnum = {}));
+export var SignatureLevelsEnum;
+(function (SignatureLevelsEnum) {
+    SignatureLevelsEnum["Bearer"] = "Bearar";
+    SignatureLevelsEnum["System"] = "System";
+})(SignatureLevelsEnum || (SignatureLevelsEnum = {}));
+export var TokenTypesEnum;
+(function (TokenTypesEnum) {
+    TokenTypesEnum["access"] = "access";
+    TokenTypesEnum["refresh"] = "refresh";
+})(TokenTypesEnum || (TokenTypesEnum = {}));

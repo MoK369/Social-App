@@ -1,16 +1,23 @@
 import type { Request, Response } from "express";
-import type { ConfirmEmailBodyDtoType, SignupBodyDtoType } from "./auth.dto.ts";
+import type {
+  ConfirmEmailBodyDtoType,
+  LoginBodyDtoType,
+  SignupBodyDtoType,
+} from "./auth.dto.ts";
 import UserRepository from "../../db/repository/user.respository.ts";
 import UserModel from "../../db/models/user.model.ts";
 import {
   BadRequestException,
   ConflictException,
+  NotFoundException,
 } from "../../utils/exceptions/custom.exceptions.ts";
 import successHandler from "../../utils/handlers/success.handler.ts";
 import Hashing from "../../utils/security/hash.security.ts";
 import { EventsEnum } from "../../utils/constants/enum.constants.ts";
 import { generateNumaricOTP } from "../../utils/security/otp.security.ts";
 import emailEvent from "../../utils/events/email.event.ts";
+import type { HIUser } from "../../db/interfaces/user.interface.ts";
+import Token from "../../utils/security/token.security.ts";
 
 class AuthenticationService {
   private userRepository = new UserRepository(UserModel);
@@ -93,7 +100,37 @@ class AuthenticationService {
   };
 
   login = async (req: Request, res: Response): Promise<Response> => {
-    return res.json({ message: "User logged in successfully", body: req.body });
+    const { email, password }: LoginBodyDtoType = req.body;
+
+    const user: HIUser | null = await this.userRepository.findByEmail({
+      email,
+    });
+    if (!user) {
+      throw new NotFoundException("Invalid Login Credentials");
+    }
+
+    if (!user.confirmedAt) {
+      throw new BadRequestException("Email Not Verified");
+    }
+
+    if (
+      !(await Hashing.compareHash({
+        plainText: password,
+        cipherText: user.password,
+      }))
+    ) {
+      throw new NotFoundException("Invalid Login Credentials");
+    }
+
+    const tokenCredentials = Token.getTokensBasedOnRole({ user });
+
+    return res.json({
+      message: "User logged in successfully",
+      body: {
+        ...tokenCredentials,
+        user,
+      },
+    });
   };
 }
 
