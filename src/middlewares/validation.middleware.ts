@@ -1,13 +1,10 @@
 import type { NextFunction, Request, Response } from "express";
 import type { ZodType } from "zod";
-import { BadRequestException } from "../utils/exceptions/custom.exceptions.ts";
+import {ValidationException } from "../utils/exceptions/custom.exceptions.ts";
+import type { IssueObjectType } from "../utils/types/issue.type.ts";
 
 type KeyReqType = keyof Request; // 'body' | 'params' | 'header'
 type SchemaType = Partial<Record<KeyReqType, ZodType>>;
-type IsssueObjectType = {
-  path: string | number | symbol | undefined;
-  message: string;
-};
 
 const validationMiddleware = (schema: SchemaType) => {
   return async (
@@ -15,28 +12,34 @@ const validationMiddleware = (schema: SchemaType) => {
     res: Response,
     next: NextFunction
   ): Promise<void> => {
-    console.log(schema);
-    console.log(Object.keys(schema));
-
-    let validationError: Partial<Record<KeyReqType, IsssueObjectType[]>> = {};
+    let validationError: { message: string; details: IssueObjectType[] } = {
+      message: "",
+      details: [],
+    };
 
     for (const key of Object.keys(schema) as KeyReqType[]) {
       if (!schema[key]) continue;
       const validationResult = await schema[key].safeParseAsync(req[key]);
       if (!validationResult.success) {
-        validationError[key] = validationResult.error.issues.map(
-          (issue): IsssueObjectType => {
+        validationError.details.push(
+          ...validationResult.error.issues.map((issue): IssueObjectType => {
+            validationError.message += !validationError.message.length
+              ? issue.message
+              : ".\n" + issue.message;
             return {
               path: issue.path.join("."),
               message: issue.message,
             };
-          }
+          })
         );
       }
     }
 
-    if (Object.keys(validationError).length > 0) {
-      throw new BadRequestException("Validation Error", validationError);
+    if (validationError.message.length > 0) {
+      throw new ValidationException(
+        validationError.message,
+        validationError.details
+      );
     }
 
     return next();

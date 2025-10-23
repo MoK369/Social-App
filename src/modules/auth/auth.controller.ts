@@ -10,6 +10,12 @@ authRouter.post(
   validationMiddleware(AuthValidation.signup),
   authenticationService.signup
 );
+
+authRouter.patch(
+  "/confirm-email",
+  validationMiddleware(AuthValidation.confirmEmail),
+  authenticationService.confirmEmail
+);
 authRouter.post(
   "/login",
   validationMiddleware(AuthValidation.login),

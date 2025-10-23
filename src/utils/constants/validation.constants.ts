@@ -17,6 +17,9 @@ const generalValidationFields = {
       });
     }
   },
+  otp: z
+    .string()
+    .regex(/^\d{6}$/, { error: "OTP must consists only of 6 digits" }),
 };
 
 export default generalValidationFields;
