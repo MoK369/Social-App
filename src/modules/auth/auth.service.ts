@@ -124,7 +124,8 @@ class AuthenticationService {
 
     const tokenCredentials = Token.getTokensBasedOnRole({ user });
 
-    return res.json({
+    return successHandler({
+      res,
       message: "User logged in successfully",
       body: {
         ...tokenCredentials,

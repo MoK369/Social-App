@@ -31,7 +31,7 @@ export var EventsEnum;
 })(EventsEnum || (EventsEnum = {}));
 export var SignatureLevelsEnum;
 (function (SignatureLevelsEnum) {
-    SignatureLevelsEnum["Bearer"] = "Bearar";
+    SignatureLevelsEnum["Bearer"] = "Bearer";
     SignatureLevelsEnum["System"] = "System";
 })(SignatureLevelsEnum || (SignatureLevelsEnum = {}));
 export var TokenTypesEnum;

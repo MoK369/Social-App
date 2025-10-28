@@ -91,7 +91,8 @@ class AuthenticationService {
             throw new NotFoundException("Invalid Login Credentials");
         }
         const tokenCredentials = Token.getTokensBasedOnRole({ user });
-        return res.json({
+        return successHandler({
+            res,
             message: "User logged in successfully",
             body: {
                 ...tokenCredentials,

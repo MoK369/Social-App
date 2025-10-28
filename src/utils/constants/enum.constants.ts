@@ -30,7 +30,7 @@ export enum EventsEnum {
 }
 
 export enum SignatureLevelsEnum {
-  Bearer = "Bearar",
+  Bearer = "Bearer",
   System = "System",
 }
 
