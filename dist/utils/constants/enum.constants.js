@@ -36,6 +36,11 @@ export var SignatureLevelsEnum;
 })(SignatureLevelsEnum || (SignatureLevelsEnum = {}));
 export var TokenTypesEnum;
 (function (TokenTypesEnum) {
-    TokenTypesEnum["access"] = "access";
-    TokenTypesEnum["refresh"] = "refresh";
+    TokenTypesEnum["access"] = "Access";
+    TokenTypesEnum["refresh"] = "Refresh";
 })(TokenTypesEnum || (TokenTypesEnum = {}));
+export var LogoutStatusEnum;
+(function (LogoutStatusEnum) {
+    LogoutStatusEnum["one"] = "One";
+    LogoutStatusEnum["all"] = "All";
+})(LogoutStatusEnum || (LogoutStatusEnum = {}));

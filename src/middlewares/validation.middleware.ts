@@ -1,12 +1,12 @@
 import type { NextFunction, Request, Response } from "express";
-import type { ZodType } from "zod";
-import {ValidationException } from "../utils/exceptions/custom.exceptions.ts";
+import { ValidationException } from "../utils/exceptions/custom.exceptions.ts";
 import type { IssueObjectType } from "../utils/types/issue.type.ts";
+import type {
+  KeyReqType,
+  ZodSchemaType,
+} from "../utils/constants/types.constants.ts";
 
-type KeyReqType = keyof Request; // 'body' | 'params' | 'header'
-type SchemaType = Partial<Record<KeyReqType, ZodType>>;
-
-const validationMiddleware = (schema: SchemaType) => {
+const validationMiddleware = (schema: ZodSchemaType) => {
   return async (
     req: Request,
     res: Response,
@@ -16,7 +16,6 @@ const validationMiddleware = (schema: SchemaType) => {
       message: "",
       details: [],
     };
-
     for (const key of Object.keys(schema) as KeyReqType[]) {
       if (!schema[key]) continue;
       const validationResult = await schema[key].safeParseAsync(req[key]);
@@ -32,9 +31,13 @@ const validationMiddleware = (schema: SchemaType) => {
             };
           })
         );
+      } else {
+        req.validationResult = {
+          ...(req.validationResult || {}),
+          [key]: validationResult.data,
+        };
       }
-    }
-
+    }      
     if (validationError.message.length > 0) {
       throw new ValidationException(
         validationError.message,

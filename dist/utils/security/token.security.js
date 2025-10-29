@@ -3,6 +3,9 @@ import { SignatureLevelsEnum, TokenTypesEnum, UserRoleEnum, } from "../constants
 import { BadRequestException, UnauthorizedException, } from "../exceptions/custom.exceptions.js";
 import UserRepository from "../../db/repository/user.respository.js";
 import UserModel from "../../db/models/user.model.js";
+import { generate21CharactersId } from "./id.security.js";
+import RevokedTokenRepository from "../../db/repository/revoked_token.repository.js";
+import RevokedTokenModel from "../../db/models/revoked_token.model.js";
 class Token {
     static generate = ({ payload, secret = process.env.ACCESS_USER_TOKEN_SIGNATURE, options = {
         expiresIn: Number(process.env.ACCESS_TOKEN_EXPIRES_IN),
@@ -38,13 +41,14 @@ class Token {
         const signatures = this.getSignatures({
             signatureLevel: this.getSignatureLevel({ role: user.role }),
         });
+        const jti = generate21CharactersId();
         return {
             accessToken: this.generate({
-                payload: { id: user.id },
+                payload: { id: user.id, jti },
                 secret: signatures.accessSignature,
             }),
             refreshToken: this.generate({
-                payload: { id: user.id },
+                payload: { id: user.id, jti },
                 secret: signatures.refreshSignatrue,
                 options: {
                     expiresIn: Number(process.env.ACCESS_TOKEN_EXPIRES_IN),
@@ -54,6 +58,7 @@ class Token {
     };
     static decode = async ({ authorization, tokenType = TokenTypesEnum.access, }) => {
         const userRepository = new UserRepository(UserModel);
+        const revokedTokenRepository = new RevokedTokenRepository(RevokedTokenModel);
         const [bearer, token] = authorization.split(" ");
         if (!bearer || !token) {
             throw new UnauthorizedException("Missing Token Parts ⛔");
@@ -70,12 +75,20 @@ class Token {
                 ? signatures.refreshSignatrue
                 : signatures.accessSignature,
         });
-        if (!payload.id || !payload.iat) {
+        if (!payload.id || !payload.iat || !payload.jti) {
             throw new BadRequestException("Invalid Token Payload !");
+        }
+        if (await revokedTokenRepository.findOne({
+            filter: { jti: payload.jti },
+        })) {
+            throw new BadRequestException("Token as been Revoked!");
         }
         const user = await userRepository.findById({ id: payload.id });
         if (!user?.confirmedAt) {
             throw new BadRequestException("Invalid Account!");
+        }
+        if ((user?.changeCredentialsTime?.getTime() || 0) > payload.iat * 1000) {
+            throw new BadRequestException("Token as been Revoked!");
         }
         return {
             user,

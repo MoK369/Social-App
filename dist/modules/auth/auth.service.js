@@ -4,7 +4,7 @@ import { BadRequestException, ConflictException, NotFoundException, } from "../.
 import successHandler from "../../utils/handlers/success.handler.js";
 import Hashing from "../../utils/security/hash.security.js";
 import { EventsEnum } from "../../utils/constants/enum.constants.js";
-import { generateNumaricOTP } from "../../utils/security/otp.security.js";
+import { generateNumaricOTP } from "../../utils/security/id.security.js";
 import emailEvent from "../../utils/events/email.event.js";
 import Token from "../../utils/security/token.security.js";
 class AuthenticationService {

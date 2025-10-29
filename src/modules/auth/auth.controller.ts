@@ -1,24 +1,24 @@
 import { Router } from "express";
 import authenticationService from "./auth.service.ts";
 import validationMiddleware from "../../middlewares/validation.middleware.ts";
-import AuthValidation from "./auth.validation.ts";
+import AuthValidators from "./auth.validation.ts";
 
 const authRouter: Router = Router();
 
 authRouter.post(
   "/signup",
-  validationMiddleware(AuthValidation.signup),
+  validationMiddleware(AuthValidators.signup),
   authenticationService.signup
 );
 
 authRouter.patch(
   "/confirm-email",
-  validationMiddleware(AuthValidation.confirmEmail),
+  validationMiddleware(AuthValidators.confirmEmail),
   authenticationService.confirmEmail
 );
 authRouter.post(
   "/login",
-  validationMiddleware(AuthValidation.login),
+  validationMiddleware(AuthValidators.login),
   authenticationService.login
 );
 

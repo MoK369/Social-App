@@ -14,7 +14,7 @@ import {
 import successHandler from "../../utils/handlers/success.handler.ts";
 import Hashing from "../../utils/security/hash.security.ts";
 import { EventsEnum } from "../../utils/constants/enum.constants.ts";
-import { generateNumaricOTP } from "../../utils/security/otp.security.ts";
+import { generateNumaricOTP } from "../../utils/security/id.security.ts";
 import emailEvent from "../../utils/events/email.event.ts";
 import type { HIUser } from "../../db/interfaces/user.interface.ts";
 import Token from "../../utils/security/token.security.ts";
