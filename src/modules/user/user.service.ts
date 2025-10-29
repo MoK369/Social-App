@@ -9,6 +9,11 @@ class UserService {
   profile = async (req: Request, res: Response): Promise<Response> => {
     return successHandler({ res, message: "User Profile!", body: req.user! });
   };
+
+  logout = async (req: Request, res: Response): Promise<Response> => {
+    const { flag } = req.body;
+    return successHandler({ res, message: "Logged out Successfully!" });
+  };
 }
 
 export default new UserService();

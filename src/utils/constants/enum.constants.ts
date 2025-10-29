@@ -35,6 +35,11 @@ export enum SignatureLevelsEnum {
 }
 
 export enum TokenTypesEnum {
-  access = "access",
-  refresh = "refresh",
+  access = "Access",
+  refresh = "Refresh",
+}
+
+export enum LogoutStatusEnum {
+  one = "One",
+  all = "All",
 }
