@@ -22,6 +22,7 @@ export enum ErrorCodesEnum {
   CONFLICT_ERROR = "CONFLICT_ERROR",
   UNAUTHORIZED = "UNAUTHORIZED",
   FORBIDDEN = "FORBIDDEN",
+  TOO_MANY_RQUESTS = "TOO_MANY_REQUESTS",
 }
 
 export enum EventsEnum {
@@ -42,4 +43,14 @@ export enum TokenTypesEnum {
 export enum LogoutStatusEnum {
   one = "One",
   all = "All",
+}
+
+export enum OTPTypesEnum {
+  confirmEmailOTP = "ConfirmEmailOTP",
+  forgetPasswordOTP = "ForgetPasswordOTP",
+}
+
+export enum EmailStatusEnum {
+  notConfirmed = "NotConfirmed",
+  confirmed = "Confirmed",
 }

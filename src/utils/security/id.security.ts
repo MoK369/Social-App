@@ -1,10 +1,10 @@
 import { customAlphabet, nanoid } from "nanoid";
 
-export const generateNumaricOTP = (): string => {
-  return customAlphabet("0123456789", 6)();
+export const generateNumericId = ({ size = 6 }: { size?: number }={}): string => {
+  return customAlphabet("0123456789", size)();
 };
 
-export const generate21CharactersId = ({
+export const generateAlphaNumaricId = ({
   size = 21,
 }: { size?: number } = {}): string => {
   return nanoid(size);

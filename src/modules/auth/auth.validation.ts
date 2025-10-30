@@ -26,11 +26,36 @@ class AuthValidators {
       }),
   };
 
+  static resendEmilOtp = {
+    body: z.strictObject(
+      {
+        email: z.email(),
+      },
+      { error: "Missing body paramters" }
+    ),
+  };
   static confirmEmail = {
-    body: z.strictObject({
-      email: z.email(),
+    body: this.resendEmilOtp.body.extend({
       otp: generalValidationFields.otp,
     }),
+  };
+  static sendForgetPasswordOtp = {
+    body: this.resendEmilOtp.body.extend({}),
+  };
+
+  static verifyForgetPasswordOtp = {
+    body: this.confirmEmail.body.extend({}),
+  };
+
+  static resetForgotPassword = {
+    body: this.resendEmilOtp.body
+      .extend({
+        password: generalValidationFields.password,
+        confirmPassword: z.string(),
+      })
+      .superRefine((data, ctx) => {
+        generalValidationFields.confirmPasswordChecker(data, ctx);
+      }),
   };
 }
 

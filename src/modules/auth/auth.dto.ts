@@ -8,3 +8,17 @@ export type ConfirmEmailBodyDtoType = z.infer<
 >;
 
 export type LoginBodyDtoType = z.infer<typeof authValidators.login.body>;
+export type ResendEmailOtpBodyDtoType = z.infer<
+  typeof authValidators.resendEmilOtp.body
+>;
+export type SendForgetPasswordOtpBodyDtoType = z.infer<
+  typeof authValidators.sendForgetPasswordOtp.body
+>;
+
+export type VerifyForgetPasswordOtpBodyDtoType = z.infer<
+  typeof authValidators.verifyForgetPasswordOtp.body
+>;
+
+export type resetForgotPasswordBodyDtoType = z.infer<
+  typeof authValidators.resetForgotPassword.body
+>;

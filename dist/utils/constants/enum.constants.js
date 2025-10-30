@@ -23,6 +23,7 @@ export var ErrorCodesEnum;
     ErrorCodesEnum["CONFLICT_ERROR"] = "CONFLICT_ERROR";
     ErrorCodesEnum["UNAUTHORIZED"] = "UNAUTHORIZED";
     ErrorCodesEnum["FORBIDDEN"] = "FORBIDDEN";
+    ErrorCodesEnum["TOO_MANY_RQUESTS"] = "TOO_MANY_REQUESTS";
 })(ErrorCodesEnum || (ErrorCodesEnum = {}));
 export var EventsEnum;
 (function (EventsEnum) {
@@ -44,3 +45,13 @@ export var LogoutStatusEnum;
     LogoutStatusEnum["one"] = "One";
     LogoutStatusEnum["all"] = "All";
 })(LogoutStatusEnum || (LogoutStatusEnum = {}));
+export var OTPTypesEnum;
+(function (OTPTypesEnum) {
+    OTPTypesEnum["confirmEmailOTP"] = "ConfirmEmailOTP";
+    OTPTypesEnum["forgetPasswordOTP"] = "ForgetPasswordOTP";
+})(OTPTypesEnum || (OTPTypesEnum = {}));
+export var EmailStatusEnum;
+(function (EmailStatusEnum) {
+    EmailStatusEnum["notConfirmed"] = "NotConfirmed";
+    EmailStatusEnum["confirmed"] = "Confirmed";
+})(EmailStatusEnum || (EmailStatusEnum = {}));

@@ -11,15 +11,40 @@ authRouter.post(
   authenticationService.signup
 );
 
+authRouter.post(
+  "/login",
+  validationMiddleware(AuthValidators.login),
+  authenticationService.login
+);
+
 authRouter.patch(
   "/confirm-email",
   validationMiddleware(AuthValidators.confirmEmail),
   authenticationService.confirmEmail
 );
-authRouter.post(
-  "/login",
-  validationMiddleware(AuthValidators.login),
-  authenticationService.login
+
+authRouter.patch(
+  "/resend-email-otp",
+  validationMiddleware(AuthValidators.resendEmilOtp),
+  authenticationService.resendEmilOtp
+);
+
+authRouter.patch(
+  "/send-forget-password-otp",
+  validationMiddleware(AuthValidators.sendForgetPasswordOtp),
+  authenticationService.sendForgetPasswordOtp
+);
+
+authRouter.patch(
+  "/verify-forget-password-otp",
+  validationMiddleware(AuthValidators.verifyForgetPasswordOtp),
+  authenticationService.verifyForgetPasswordOtp
+);
+
+authRouter.patch(
+  "/reset-forgot-password",
+  validationMiddleware(AuthValidators.resetForgotPassword),
+  authenticationService.resetForgotPassword
 );
 
 export default authRouter;
