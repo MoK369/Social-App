@@ -54,3 +54,8 @@ export enum EmailStatusEnum {
   notConfirmed = "NotConfirmed",
   confirmed = "Confirmed",
 }
+
+export enum StorageTypesEnum {
+  memory = "Memory",
+  disk = "Disk",
+}

@@ -17,6 +17,14 @@ class UserService {
     return successHandler({ res, message: "User Profile!", body: req.user! });
   };
 
+  profileImage = async (req: Request, res: Response): Promise<Response> => {
+    return successHandler({
+      res,
+      message: "Image Uploaded !",
+      body: { file: req.file },
+    });
+  };
+
   logout = async (req: Request, res: Response): Promise<Response> => {
     const { flag }: LogoutBodyTypeDto = req.validationResult.body;
 

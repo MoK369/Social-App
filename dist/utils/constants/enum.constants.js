@@ -55,3 +55,8 @@ export var EmailStatusEnum;
     EmailStatusEnum["notConfirmed"] = "NotConfirmed";
     EmailStatusEnum["confirmed"] = "Confirmed";
 })(EmailStatusEnum || (EmailStatusEnum = {}));
+export var StorageTypesEnum;
+(function (StorageTypesEnum) {
+    StorageTypesEnum["memory"] = "Memory";
+    StorageTypesEnum["disk"] = "Disk";
+})(StorageTypesEnum || (StorageTypesEnum = {}));

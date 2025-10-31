@@ -5,8 +5,6 @@ declare module "express-serve-static-core" {
   interface Request {
     user?: HIUser;
     tokenPayload?: JwtPayload;
-    validationResult: Partial<
-      Record<KeyReqType, any>
-    >;
+    validationResult: Partial<Record<KeyReqType, any>>;
   }
 }

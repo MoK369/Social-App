@@ -10,6 +10,13 @@ class UserService {
     profile = async (req, res) => {
         return successHandler({ res, message: "User Profile!", body: req.user });
     };
+    profileImage = async (req, res) => {
+        return successHandler({
+            res,
+            message: "Image Uploaded !",
+            body: { file: req.file },
+        });
+    };
     logout = async (req, res) => {
         const { flag } = req.validationResult.body;
         const statusCode = await Token.revoke({
