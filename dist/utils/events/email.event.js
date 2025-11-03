@@ -21,4 +21,21 @@ emailEvent.subscribe({
         });
     },
 });
+emailEvent.subscribe({
+    eventName: EventsEnum.resetPassword,
+    backgroundFunction: async (payload) => {
+        const subject = "Forget Password";
+        await sendEmail({
+            data: {
+                subject,
+                to: payload.to,
+                html: HTML_EMAIL_TEMPLATE({
+                    title: subject,
+                    message: "Thank you Using Our App ❤️, please use the otp below to verify Forget Password",
+                    otpOrLink: payload.otp,
+                }),
+            },
+        });
+    },
+});
 export default emailEvent;

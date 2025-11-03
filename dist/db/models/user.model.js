@@ -1,19 +1,23 @@
 import mongoose from "mongoose";
-import { GenderEnum, UserRoleEnum } from "../../utils/constants/enum.constants.js";
+import { GenderEnum, UserRoleEnum, } from "../../utils/constants/enum.constants.js";
 const userSchema = new mongoose.Schema({
     firstName: { type: String, required: true, minlength: 2, maxlength: 25 },
     lastName: { type: String, required: true, minlength: 2, maxlength: 25 },
-    email: { type: String, required: true, unique: true, },
+    email: { type: String, required: true, unique: true },
     confirmEmailOtp: {
         code: { type: String },
         expiresAt: { type: Date },
+        count: { type: Number, default: 0 },
     },
     confirmedAt: { type: Date },
     password: { type: String, required: true },
     resetPasswordOtp: {
         code: { type: String },
         expiresAt: { type: Date },
+        count: { type: Number, default: 0 },
     },
+    resetPasswordVerificationExpiresAt: { type: Date },
+    lastResetPasswordAt: { type: Date },
     changeCredentialsTime: { type: Date },
     phone: { type: String, required: true },
     gender: {
@@ -31,9 +35,12 @@ const userSchema = new mongoose.Schema({
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
 });
-userSchema.virtual("fullName").get(function () {
+userSchema
+    .virtual("fullName")
+    .get(function () {
     return `${this.firstName} ${this.lastName}`;
-}).set(function (value) {
+})
+    .set(function (value) {
     const [firstName, lastName] = value.split(" ");
     this.set({ firstName, lastName });
 });

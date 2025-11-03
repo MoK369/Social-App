@@ -20,6 +20,12 @@ const validationMiddleware = (schema) => {
                     };
                 }));
             }
+            else {
+                req.validationResult = {
+                    ...(req.validationResult || {}),
+                    [key]: validationResult.data,
+                };
+            }
         }
         if (validationError.message.length > 0) {
             throw new ValidationException(validationError.message, validationError.details);

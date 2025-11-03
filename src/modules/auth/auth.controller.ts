@@ -1,25 +1,50 @@
 import { Router } from "express";
 import authenticationService from "./auth.service.ts";
 import validationMiddleware from "../../middlewares/validation.middleware.ts";
-import AuthValidation from "./auth.validation.ts";
+import AuthValidators from "./auth.validation.ts";
 
 const authRouter: Router = Router();
 
 authRouter.post(
   "/signup",
-  validationMiddleware(AuthValidation.signup),
+  validationMiddleware(AuthValidators.signup),
   authenticationService.signup
+);
+
+authRouter.post(
+  "/login",
+  validationMiddleware(AuthValidators.login),
+  authenticationService.login
 );
 
 authRouter.patch(
   "/confirm-email",
-  validationMiddleware(AuthValidation.confirmEmail),
+  validationMiddleware(AuthValidators.confirmEmail),
   authenticationService.confirmEmail
 );
-authRouter.post(
-  "/login",
-  validationMiddleware(AuthValidation.login),
-  authenticationService.login
+
+authRouter.patch(
+  "/resend-email-otp",
+  validationMiddleware(AuthValidators.resendEmilOtp),
+  authenticationService.resendEmilOtp
+);
+
+authRouter.patch(
+  "/send-forget-password-otp",
+  validationMiddleware(AuthValidators.sendForgetPasswordOtp),
+  authenticationService.sendForgetPasswordOtp
+);
+
+authRouter.patch(
+  "/verify-forget-password-otp",
+  validationMiddleware(AuthValidators.verifyForgetPasswordOtp),
+  authenticationService.verifyForgetPasswordOtp
+);
+
+authRouter.patch(
+  "/reset-forgot-password",
+  validationMiddleware(AuthValidators.resetForgotPassword),
+  authenticationService.resetForgotPassword
 );
 
 export default authRouter;
