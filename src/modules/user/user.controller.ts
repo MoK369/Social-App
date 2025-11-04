@@ -3,7 +3,9 @@ import userService from "./user.service.ts";
 import Auths from "../../middlewares/auths.middlewares.ts";
 import validationMiddleware from "../../middlewares/validation.middleware.ts";
 import UserValidators from "./user.validation.ts";
-import { TokenTypesEnum } from "../../utils/constants/enum.constants.ts";
+import {
+  TokenTypesEnum,
+} from "../../utils/constants/enum.constants.ts";
 import CloudMulter from "../../utils/multer/cloud.multer.ts";
 import fileValidation from "../../utils/multer/file_validation.multer.ts";
 
@@ -17,6 +19,7 @@ userRouter.patch(
     fieldName: "image",
     validation: fileValidation.image,
   }),
+  validationMiddleware(UserValidators.profileImage),
   userService.profileImage
 );
 userRouter.post(

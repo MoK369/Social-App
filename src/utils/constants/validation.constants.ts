@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Buffer } from "buffer";
 
 const generalValidationFields = {
   phone: z.string().regex(/^(002|\+2)?01[0125][0-9]{8}$/),
@@ -20,6 +21,23 @@ const generalValidationFields = {
   otp: z
     .string()
     .regex(/^\d{6}$/, { error: "OTP must consists only of 6 digits" }),
+  fileKeys: {
+    fieldname: z.string(),
+    originalname: z.string(),
+    encoding: z.string(),
+    mimetype: z.string(),
+    basePath: z.string(),
+    finalPath: z.string(),
+    destination: z.string(),
+    filename: z.string(),
+    path: z.string(),
+    size: z.number().positive(),
+    buffer: z
+      .instanceof(Buffer)
+      .refine((buffer) => buffer.length > 0, {
+        error: "Buffer must not be empty",
+      }),
+  },
 };
 
 export default generalValidationFields;

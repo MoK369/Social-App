@@ -37,7 +37,7 @@ const validationMiddleware = (schema: ZodSchemaType) => {
           [key]: validationResult.data,
         };
       }
-    }      
+    }
     if (validationError.message.length > 0) {
       throw new ValidationException(
         validationError.message,
