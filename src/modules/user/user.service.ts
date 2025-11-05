@@ -6,7 +6,7 @@ import type { LogoutBodyTypeDto } from "./user.dto.ts";
 import RevokedTokenModel from "../../db/models/revoked_token.model.ts";
 import RevokedTokenRepository from "../../db/repository/revoked_token.repository.ts";
 import Token from "../../utils/security/token.security.ts";
-import S3Service from "../../utils/multer/s3.config.ts";
+import S3Service from "../../utils/multer/s3.service.ts";
 
 class UserService {
   protected userRepository = new UserRepository(UserModel);
@@ -19,15 +19,24 @@ class UserService {
   };
 
   profileImage = async (req: Request, res: Response): Promise<Response> => {
-    const uploadKey: string = await S3Service.uploadFile({
-      File: req.file!,
+    // const uploadKey = await S3Service.uploadLargeFile({
+    //   File: req.file!,
+    //   Path: `users/${req.tokenPayload?.id}`,
+    // });
+    const {
+      contentType,
+      originalname,
+    }: { contentType: string; originalname: string } = req.body;
+    const { url, key } = await S3Service.createPresignedUploadUrl({
+      contentType,
+      originalname,
       Path: `users/${req.tokenPayload?.id}`,
     });
 
     return successHandler({
       res,
       message: "Image Uploaded !",
-      body: { path: uploadKey },
+      body: { url, key },
     });
   };
 

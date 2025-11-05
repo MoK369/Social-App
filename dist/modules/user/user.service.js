@@ -4,7 +4,7 @@ import successHandler from "../../utils/handlers/success.handler.js";
 import RevokedTokenModel from "../../db/models/revoked_token.model.js";
 import RevokedTokenRepository from "../../db/repository/revoked_token.repository.js";
 import Token from "../../utils/security/token.security.js";
-import S3Service from "../../utils/multer/s3.config.js";
+import S3Service from "../../utils/multer/s3.service.js";
 class UserService {
     userRepository = new UserRepository(UserModel);
     revokedTokenRepository = new RevokedTokenRepository(RevokedTokenModel);
@@ -12,14 +12,16 @@ class UserService {
         return successHandler({ res, message: "User Profile!", body: req.user });
     };
     profileImage = async (req, res) => {
-        const uploadKey = await S3Service.uploadFile({
-            File: req.file,
+        const { contentType, originalname, } = req.body;
+        const { url, key } = await S3Service.createPresignedUploadUrl({
+            contentType,
+            originalname,
             Path: `users/${req.tokenPayload?.id}`,
         });
         return successHandler({
             res,
             message: "Image Uploaded !",
-            body: { path: uploadKey },
+            body: { url, key },
         });
     };
     logout = async (req, res) => {
