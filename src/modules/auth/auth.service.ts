@@ -113,7 +113,7 @@ class AuthenticationService {
     const { email }: ResendEmailOtpBodyDtoType = req.body;
     const user = await this.userRepository.findByEmail({ email });
 
-    const count = OTP.checkRequestOfOTP({ user });
+    const count = OTP.checkRequestOfNewOTP({ user });
 
     const otp = generateNumericId();
     await this.userRepository.updateOne({
@@ -186,7 +186,7 @@ class AuthenticationService {
         "You have reset your password recently, please try after 24 hours from last reset"
       );
     }
-    const count = OTP.checkRequestOfOTP({
+    const count = OTP.checkRequestOfNewOTP({
       user,
       otpType: OTPTypesEnum.forgetPasswordOTP,
       checkEmailStatus: EmailStatusEnum.confirmed,

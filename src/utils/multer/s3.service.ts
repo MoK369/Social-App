@@ -1,6 +1,7 @@
 import {
   S3Client,
   PutObjectCommand,
+  GetObjectCommand,
   ObjectCannedACL,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
@@ -12,15 +13,13 @@ import { createReadStream } from "node:fs";
 import { BadRequestException } from "../exceptions/custom.exceptions.ts";
 
 class S3Service {
-  static s3Config = () => {
-    return new S3Client({
-      region: process.env.AWS_REGION!,
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-      },
-    });
-  };
+  private static _s3ClientObject = new S3Client({
+    region: process.env.AWS_REGION!,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+  });
 
   static uploadFile = async ({
     StorageApproach = StorageTypesEnum.memory,
@@ -48,7 +47,7 @@ class S3Service {
       ContentType: File.mimetype,
     });
 
-    await this.s3Config().send(command);
+    await this._s3ClientObject.send(command);
     if (!command.input.Key) {
       throw new BadRequestException("Failed to Retrieve Upload Key");
     }
@@ -69,7 +68,7 @@ class S3Service {
     File: Express.Multer.File;
   }): Promise<string> => {
     const upload = new Upload({
-      client: this.s3Config(),
+      client: this._s3ClientObject,
       params: {
         Bucket,
         ACL,
@@ -114,11 +113,28 @@ class S3Service {
       })}_pre_${originalname}`,
       ContentType: contentType,
     });
-    const url = await getSignedUrl(this.s3Config(), command, { expiresIn });
+    const url = await getSignedUrl(this._s3ClientObject, command, {
+      expiresIn,
+    });
     if (!url || !command.input.Key) {
       throw new BadRequestException("Failed to Create Presigned URL");
     }
     return { url, key: command.input.Key };
+  };
+
+  static getFile = async ({
+    Bucket = process.env.AWS_BUCKET_NAME,
+    Key,
+  }: {
+    Bucket?: string;
+    Key: string;
+  }) => {
+    const command = new GetObjectCommand({
+      Bucket,
+      Key,
+    });
+
+    return this._s3ClientObject.send(command);
   };
 }
 

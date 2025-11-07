@@ -37,13 +37,11 @@ async function bootstrap(): Promise<void> {
   } else {
     await UserModel.syncIndexes();
     app.use(express.json());
-    app.get("/", (req: Request, res: Response) => {
-      res.json({
-        message: `Welcome to ${process.env.APP_NAME} Backend Landing Page ❤️`,
-      });
-    });
 
-    app.use("/api/v1", modulesRouter);
+    app.use(
+      ["/", "/uploads", "/api/v1"],
+      modulesRouter
+    );
 
     app.use("{/*dummy}", (req: Request, res: Response) => {
       res.status(404).json({

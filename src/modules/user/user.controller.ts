@@ -25,6 +25,7 @@ userRouter.patch(
   // validationMiddleware(UserValidators.profileImageDisk),
   userService.profileImage
 );
+
 userRouter.post(
   "/logout",
   Auths.authenticationMiddleware(),

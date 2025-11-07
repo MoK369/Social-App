@@ -14,9 +14,7 @@ class CustomEvents<T> {
     backgroundFunction: (payload: T) => Promise<void>;
   }) => {
     this.emitter.on(eventName, async (args) => {
-      try {
-        console.log("inside subscribe custom event");
-        
+      try {        
         await backgroundFunction(args);
       } catch (e) {
         console.log(
