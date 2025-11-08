@@ -38,10 +38,7 @@ async function bootstrap(): Promise<void> {
     await UserModel.syncIndexes();
     app.use(express.json());
 
-    app.use(
-      ["/", "/uploads", "/api/v1"],
-      modulesRouter
-    );
+    app.use(["/","/api/v1"], modulesRouter);
 
     app.use("{/*dummy}", (req: Request, res: Response) => {
       res.status(404).json({

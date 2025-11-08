@@ -29,7 +29,7 @@ async function bootstrap() {
     else {
         await UserModel.syncIndexes();
         app.use(express.json());
-        app.use(["/", "/uploads", "/api/v1"], modulesRouter);
+        app.use(["/", "/api/v1"], modulesRouter);
         app.use("{/*dummy}", (req, res) => {
             res.status(404).json({
                 error: `Wrong ROUTE ${req.baseUrl} or METHOD ${req.method} 😵`,

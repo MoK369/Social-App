@@ -3,6 +3,7 @@ import {
   PutObjectCommand,
   GetObjectCommand,
   ObjectCannedACL,
+  type GetObjectOutput,
 } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 import type { Progress } from "@aws-sdk/lib-storage";
@@ -128,7 +129,7 @@ class S3Service {
   }: {
     Bucket?: string;
     Key: string;
-  }) => {
+  }): Promise<GetObjectOutput> => {
     const command = new GetObjectCommand({
       Bucket,
       Key,
