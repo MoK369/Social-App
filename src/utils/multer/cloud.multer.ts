@@ -45,7 +45,7 @@ class CloudMulter {
             ) {
               callback(
                 null,
-                `${generateAlphaNumaricId({ size: 32 })}_${file.originalname}`
+                `${generateAlphaNumaricId({ size: 24 })}_${file.originalname}`
               );
             },
           });

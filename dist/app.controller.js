@@ -8,6 +8,7 @@ import globalErrorHandler from "./utils/handlers/global.error.handler.js";
 import connectDB from "./db/db.connection.js";
 import UserModel from "./db/models/user.model.js";
 import modulesRouter from "./modules/module.routes.js";
+import uploadsRouter from "./uploads/uploads.route.js";
 async function bootstrap() {
     const app = express();
     app.use(cors());
@@ -30,6 +31,7 @@ async function bootstrap() {
         await UserModel.syncIndexes();
         app.use(express.json());
         app.use(["/", "/api/v1"], modulesRouter);
+        app.use("/uploads", uploadsRouter);
         app.use("{/*dummy}", (req, res) => {
             res.status(404).json({
                 error: `Wrong ROUTE ${req.baseUrl} or METHOD ${req.method} 😵`,

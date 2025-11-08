@@ -21,7 +21,7 @@ class CloudMulter {
                     callback(null, CloudMulter._tempFolderPath);
                 },
                 filename: function (req, file, callback) {
-                    callback(null, `${generateAlphaNumaricId({ size: 32 })}_${file.originalname}`);
+                    callback(null, `${generateAlphaNumaricId({ size: 24 })}_${file.originalname}`);
                 },
             });
         const fileFilter = (req, file, callback) => {

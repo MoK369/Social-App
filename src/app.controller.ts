@@ -9,6 +9,7 @@ import globalErrorHandler from "./utils/handlers/global.error.handler.ts";
 import connectDB from "./db/db.connection.ts";
 import UserModel from "./db/models/user.model.ts";
 import modulesRouter from "./modules/module.routes.ts";
+import uploadsRouter from "./uploads/uploads.route.ts";
 
 async function bootstrap(): Promise<void> {
   const app: Express = express();
@@ -37,8 +38,8 @@ async function bootstrap(): Promise<void> {
   } else {
     await UserModel.syncIndexes();
     app.use(express.json());
-
-    app.use(["/","/api/v1"], modulesRouter);
+    app.use(["/", "/api/v1"], modulesRouter);
+    app.use("/uploads", uploadsRouter);
 
     app.use("{/*dummy}", (req: Request, res: Response) => {
       res.status(404).json({

@@ -27,7 +27,7 @@ class UserValidators {
           encoding: generalValidationFields.fileKeys.encoding,
           mimetype: generalValidationFields.fileKeys.mimetype,
           buffer: generalValidationFields.fileKeys.buffer,
-          size: generalValidationFields.fileKeys.size.max(1024 * 512), // 512KB
+          size: generalValidationFields.fileKeys.size.max(1024 * 1024), // 1MB
         },
         { error: "image is missing" }
       )
@@ -59,7 +59,7 @@ class UserValidators {
           destination: generalValidationFields.fileKeys.destination,
           filename: generalValidationFields.fileKeys.fieldname,
           path: generalValidationFields.fileKeys.path,
-          size: generalValidationFields.fileKeys.size.max(5*1024 * 1024), // 5MB
+          size: generalValidationFields.fileKeys.size.max(5 * 1024 * 1024), // 5MB
         },
         { error: "image is missing" }
       )

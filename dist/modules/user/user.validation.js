@@ -22,7 +22,7 @@ class UserValidators {
             encoding: generalValidationFields.fileKeys.encoding,
             mimetype: generalValidationFields.fileKeys.mimetype,
             buffer: generalValidationFields.fileKeys.buffer,
-            size: generalValidationFields.fileKeys.size.max(1024 * 512),
+            size: generalValidationFields.fileKeys.size.max(1024 * 1024),
         }, { error: "image is missing" })
             .superRefine((data, ctx) => {
             if (data.fieldname !== "image") {

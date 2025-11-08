@@ -31,6 +31,11 @@ export interface IUser {
 
   phone: string;
 
+  profilePicture?: {
+    subKey: string | undefined;
+    url?: string;
+  };
+
   gender: GenderEnum;
   role: UserRoleEnum;
 

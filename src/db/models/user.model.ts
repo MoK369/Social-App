@@ -29,6 +29,9 @@ const userSchema = new mongoose.Schema<IUser>(
     changeCredentialsTime: { type: Date },
 
     phone: { type: String, required: true },
+    profilePicture: {
+      subKey: { type: String },
+    },
 
     gender: {
       type: String,
@@ -47,6 +50,22 @@ const userSchema = new mongoose.Schema<IUser>(
     toObject: { virtuals: true },
   }
 );
+
+userSchema.methods.toJSON = function () {
+  const { id, fullName, ...restObj }: IUser = this.toObject();
+  return {
+    id: this._id,
+    fullName,
+    email: restObj.email,
+    phone: restObj.phone,
+    gender: restObj.gender,
+    role: restObj.role,
+    profilePicture: restObj.profilePicture,
+    createdAt: restObj.createdAt,
+    updatedAt: restObj.updatedAt,
+    confirmedAt: restObj.confirmedAt,
+  };
+};
 
 userSchema
   .virtual("fullName")

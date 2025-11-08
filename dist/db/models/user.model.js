@@ -20,6 +20,9 @@ const userSchema = new mongoose.Schema({
     lastResetPasswordAt: { type: Date },
     changeCredentialsTime: { type: Date },
     phone: { type: String, required: true },
+    profilePicture: {
+        subKey: { type: String },
+    },
     gender: {
         type: String,
         enum: Object.values(GenderEnum),
@@ -35,6 +38,21 @@ const userSchema = new mongoose.Schema({
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
 });
+userSchema.methods.toJSON = function () {
+    const { id, fullName, ...restObj } = this.toObject();
+    return {
+        id: this._id,
+        fullName,
+        email: restObj.email,
+        phone: restObj.phone,
+        gender: restObj.gender,
+        role: restObj.role,
+        profilePicture: restObj.profilePicture,
+        createdAt: restObj.createdAt,
+        updatedAt: restObj.updatedAt,
+        confirmedAt: restObj.confirmedAt,
+    };
+};
 userSchema
     .virtual("fullName")
     .get(function () {
