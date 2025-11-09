@@ -24,12 +24,18 @@ export var ErrorCodesEnum;
     ErrorCodesEnum["UNAUTHORIZED"] = "UNAUTHORIZED";
     ErrorCodesEnum["FORBIDDEN"] = "FORBIDDEN";
     ErrorCodesEnum["TOO_MANY_RQUESTS"] = "TOO_MANY_REQUESTS";
+    ErrorCodesEnum["ASSET_ERROR"] = "ASSET_ERROR";
 })(ErrorCodesEnum || (ErrorCodesEnum = {}));
-export var EventsEnum;
-(function (EventsEnum) {
-    EventsEnum["verifyEmail"] = "verifyEmail";
-    EventsEnum["resetPassword"] = "resetPassword";
-})(EventsEnum || (EventsEnum = {}));
+export var EmailEventsEnum;
+(function (EmailEventsEnum) {
+    EmailEventsEnum["verifyEmail"] = "verifyEmail";
+    EmailEventsEnum["resetPassword"] = "resetPassword";
+})(EmailEventsEnum || (EmailEventsEnum = {}));
+export var S3EventsEnum;
+(function (S3EventsEnum) {
+    S3EventsEnum["trackProfileImageUpload"] = "trackProfileImageUpload";
+    S3EventsEnum["trackCoverImageUpload"] = "trackCoverImageUpload";
+})(S3EventsEnum || (S3EventsEnum = {}));
 export var SignatureLevelsEnum;
 (function (SignatureLevelsEnum) {
     SignatureLevelsEnum["Bearer"] = "Bearer";

@@ -1,18 +1,16 @@
-import type Mail from "nodemailer/lib/mailer/index.js";
-import { EventsEnum } from "../constants/enum.constants.ts";
+import { EmailEventsEnum } from "../constants/enum.constants.ts";
+import type { IEmailPayload } from "../constants/interface.constants.ts";
 import sendEmail from "../email/send.email.ts";
 import HTML_EMAIL_TEMPLATE from "../email/templates/html_email.template.ts";
 import CustomEvents from "./custom.event.ts";
 import { EventEmitter } from "node:events";
 
-interface IEmail extends Mail.Options {
-  otp: string;
-}
-
-const emailEvent = new CustomEvents<IEmail>(new EventEmitter());
+const emailEvent = new CustomEvents<EmailEventsEnum, IEmailPayload>(
+  new EventEmitter()
+);
 
 emailEvent.subscribe({
-  eventName: EventsEnum.verifyEmail,
+  eventName: EmailEventsEnum.verifyEmail,
   backgroundFunction: async (payload) => {
     const subject = "Email Verification";
     await sendEmail({
@@ -31,7 +29,7 @@ emailEvent.subscribe({
 });
 
 emailEvent.subscribe({
-  eventName: EventsEnum.resetPassword,
+  eventName: EmailEventsEnum.resetPassword,
   backgroundFunction: async (payload) => {
     const subject = "Forget Password";
     await sendEmail({

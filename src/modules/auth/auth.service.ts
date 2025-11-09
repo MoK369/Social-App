@@ -19,8 +19,8 @@ import {
 import successHandler from "../../utils/handlers/success.handler.ts";
 import Hashing from "../../utils/security/hash.security.ts";
 import {
+  EmailEventsEnum,
   EmailStatusEnum,
-  EventsEnum,
   OTPTypesEnum,
 } from "../../utils/constants/enum.constants.ts";
 import { generateNumericId } from "../../utils/security/id.security.ts";
@@ -59,7 +59,7 @@ class AuthenticationService {
     });
 
     emailEvent.publish({
-      eventName: EventsEnum.verifyEmail,
+      eventName: EmailEventsEnum.verifyEmail,
       payload: { to: email, otp },
     });
     return successHandler({
@@ -129,7 +129,7 @@ class AuthenticationService {
       },
     });
     emailEvent.publish({
-      eventName: EventsEnum.verifyEmail,
+      eventName: EmailEventsEnum.verifyEmail,
       payload: { to: email, otp },
     });
     return successHandler({ res, message: "OTP has been resent!" });
@@ -210,7 +210,7 @@ class AuthenticationService {
       },
     });
     emailEvent.publish({
-      eventName: EventsEnum.resetPassword,
+      eventName: EmailEventsEnum.resetPassword,
       payload: { to: email, otp },
     });
     return successHandler({ res, message: "OTP has been sent!" });

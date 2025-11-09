@@ -17,10 +17,10 @@ uploadsRouter.get(
     const { download, downloadName }: GetFileQueryParamsType =
       req.query as unknown as GetFileQueryParamsType;
     const { path } = req.params as unknown as { path: string[] };
-    const key = path.join("/");
+    const SubKey = path.join("/");
 
     const signedUrl = await S3Service.createPresignedGetUrl({
-      Key: key,
+      SubKey,
       download,
       downloadName,
     });
@@ -38,16 +38,12 @@ uploadsRouter.get(
     const { download, downloadName }: GetFileQueryParamsType =
       req.query as unknown as GetFileQueryParamsType;
     const { path } = req.params as unknown as { path: string[] };
-    const key = path.join("/");
+    const SubKey = path.join("/");
 
-    const s3Response = await S3Service.getFile({ Key: key });
+    const s3Response = await S3Service.getFile({ SubKey });
     if (!s3Response.Body) {
       throw new BadRequestException("Failed to fetch this asset ☹️");
     }
-    console.log({
-      s3Response: s3Response,
-      typeof: typeof s3Response.Body,
-    });
 
     res.setHeader(
       "Content-Type",
@@ -59,7 +55,7 @@ uploadsRouter.get(
         `attachment; filename="${
           downloadName
             ? `${downloadName}.${s3Response.ContentType?.split("/")[1]}`
-            : key.split("/").pop()
+            : SubKey.split("/").pop()
         }"`
       );
     }

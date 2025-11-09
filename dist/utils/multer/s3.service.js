@@ -3,7 +3,7 @@ import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { StorageTypesEnum } from "../constants/enum.constants.js";
 import { createReadStream } from "node:fs";
-import { BadRequestException } from "../exceptions/custom.exceptions.js";
+import { S3Exception } from "../exceptions/custom.exceptions.js";
 import KeyUtil from "./key.multer.js";
 class S3Service {
     static _s3ClientObject = new S3Client({
@@ -28,10 +28,10 @@ class S3Service {
             ContentType: File.mimetype,
         });
         await this._s3ClientObject.send(command).catch((error) => {
-            throw new BadRequestException(`Failed to upload file ☹️ Error: ${error.message}`);
+            throw new S3Exception(error, `Failed to upload file ☹️`);
         });
         if (!command.input.Key) {
-            throw new BadRequestException("Failed to Retrieve Upload Key");
+            throw new S3Exception(undefined, "Failed to Retrieve Upload Key");
         }
         return subKey;
     };
@@ -56,15 +56,15 @@ class S3Service {
             console.log("Large Upload File Progress:::", progress);
         });
         upload.done().catch((error) => {
-            throw new BadRequestException(`Failed to upload file ☹️ Error: ${error.message}`);
+            throw new S3Exception(error, `Failed to upload file ☹️.`);
         });
         const { Key } = await upload.done();
         if (!Key) {
-            throw new BadRequestException("Failed to Retrieve Upload Key");
+            throw new S3Exception(undefined, "Failed to Retrieve Upload Key");
         }
         return subKey;
     };
-    static createPresignedUploadUrl = async ({ Bucket = process.env.AWS_BUCKET_NAME, originalname, Path = "general", contentType, expiresIn = 120, }) => {
+    static createPresignedUploadUrl = async ({ Bucket = process.env.AWS_BUCKET_NAME, originalname, Path = "general", contentType, expiresIn = Number(process.env.AWS_PRESIGNED_URL_EXPIRES_IN_SECONDS), }) => {
         const subKey = KeyUtil.generateS3SubKey({
             Path,
             tag: "presigned",
@@ -78,55 +78,62 @@ class S3Service {
         const url = await getSignedUrl(this._s3ClientObject, command, {
             expiresIn,
         }).catch((error) => {
-            throw new BadRequestException(`Failed to create presigned upload url ☹️ Error: ${error.message}`);
+            throw new S3Exception(error, `Failed to create presigned upload url ☹️.`);
         });
         if (!url || !command.input.Key) {
-            throw new BadRequestException("Failed to Create Presigned URL");
+            throw new S3Exception(undefined, "Failed to Create Presigned URL");
         }
         return { url, key: subKey };
     };
-    static createPresignedGetUrl = async ({ Bucket = process.env.AWS_BUCKET_NAME, Key, expiresIn = 120, download = "false", downloadName, }) => {
+    static createPresignedGetUrl = async ({ Bucket = process.env.AWS_BUCKET_NAME, SubKey, expiresIn = Number(process.env.AWS_PRESIGNED_URL_EXPIRES_IN_SECONDS), download = "false", downloadName, }) => {
         const command = new GetObjectCommand({
             Bucket,
-            Key,
+            Key: KeyUtil.generateS3KeyFromSubKey(SubKey),
             ResponseContentDisposition: download === "true"
                 ? `attachment; filename="${downloadName
-                    ? `${downloadName}.${Key.split(".").pop() ?? ""}`
-                    : Key.split("/").pop()}"`
+                    ? `${downloadName}.${SubKey.split(".").pop() ?? ""}`
+                    : SubKey.split("/").pop()}"`
                 : undefined,
         });
         const url = await getSignedUrl(this._s3ClientObject, command, {
             expiresIn,
         }).catch((error) => {
-            throw new BadRequestException(`Failed to create presigned get url ☹️ Error: ${error.message}`);
+            throw new S3Exception(error, `Failed to create presigned get url ☹️.`);
         });
         if (!url || !command.input.Key) {
-            throw new BadRequestException("Failed to Create Presigned URL");
+            throw new S3Exception(undefined, "Failed to Create Presigned URL");
         }
         return url;
     };
-    static getFile = async ({ Bucket = process.env.AWS_BUCKET_NAME, Key, }) => {
+    static getFile = async ({ Bucket = process.env.AWS_BUCKET_NAME, SubKey, }) => {
         const command = new GetObjectCommand({
             Bucket,
-            Key,
+            Key: KeyUtil.generateS3KeyFromSubKey(SubKey),
         });
         return this._s3ClientObject.send(command).catch((error) => {
-            throw new BadRequestException(`Failed to fetch this asset ☹️ Error: ${error.message}`);
+            throw new S3Exception(error, `Failed to fetch this asset ☹️.`);
         });
     };
-    static deleteFile = async ({ Bucket = process.env.AWS_BUCKET_NAME, Key, }) => {
+    static deleteFile = async ({ Bucket = process.env.AWS_BUCKET_NAME, SubKey, }) => {
         const command = new DeleteObjectCommand({
             Bucket,
-            Key,
+            Key: KeyUtil.generateS3KeyFromSubKey(SubKey),
         });
         return this._s3ClientObject.send(command).catch((error) => {
-            throw new BadRequestException(`Failed to delete this asset ☹️ Error: ${error.message}`);
+            throw new S3Exception(error, `Failed to delete this asset ☹️.`);
         });
     };
-    static deleteFiles = async ({ Bucket = process.env.AWS_BUCKET_NAME, Keys, Quiet, }) => {
-        const Objects = Keys.map((Key) => {
-            return { Key };
-        });
+    static deleteFiles = async ({ Bucket = process.env.AWS_BUCKET_NAME, Keys, SubKeys, Quiet, }) => {
+        if (!Keys && !SubKeys) {
+            throw new S3Exception(undefined, "No keys provided for deletion ☹️.");
+        }
+        const Objects = Keys
+            ? Keys.map((Key) => {
+                return { Key };
+            })
+            : SubKeys.map((SubKey) => {
+                return { Key: KeyUtil.generateS3KeyFromSubKey(SubKey) };
+            });
         const command = new DeleteObjectsCommand({
             Bucket,
             Delete: {
@@ -135,7 +142,7 @@ class S3Service {
             },
         });
         return this._s3ClientObject.send(command).catch((error) => {
-            throw new BadRequestException(`Failed to delete these assets ☹️ Error: ${error.message}`);
+            throw new S3Exception(error, `Failed to delete these assets ☹️.`);
         });
     };
     static listDirectoryFiles = async ({ Bucket = process.env.AWS_BUCKET_NAME, FolderPath, }) => {
@@ -144,10 +151,10 @@ class S3Service {
             Prefix: KeyUtil.generateS3KeyFromSubKey(FolderPath),
         });
         const result = await this._s3ClientObject.send(command).catch((error) => {
-            throw new BadRequestException(`Failed to list files in this directory ☹️ Error: ${error.message}`);
+            throw new S3Exception(error, `Failed to list files in this directory ☹️.`);
         });
         if (!result.Contents || result.Contents.length === 0) {
-            throw new BadRequestException("No files found in this directory ☹️");
+            throw new S3Exception(undefined, "No files found in this directory ☹️");
         }
         return result;
     };

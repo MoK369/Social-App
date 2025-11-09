@@ -1,11 +1,11 @@
-import { EventsEnum } from "../constants/enum.constants.js";
+import { EmailEventsEnum } from "../constants/enum.constants.js";
 import sendEmail from "../email/send.email.js";
 import HTML_EMAIL_TEMPLATE from "../email/templates/html_email.template.js";
 import CustomEvents from "./custom.event.js";
 import { EventEmitter } from "node:events";
 const emailEvent = new CustomEvents(new EventEmitter());
 emailEvent.subscribe({
-    eventName: EventsEnum.verifyEmail,
+    eventName: EmailEventsEnum.verifyEmail,
     backgroundFunction: async (payload) => {
         const subject = "Email Verification";
         await sendEmail({
@@ -22,7 +22,7 @@ emailEvent.subscribe({
     },
 });
 emailEvent.subscribe({
-    eventName: EventsEnum.resetPassword,
+    eventName: EmailEventsEnum.resetPassword,
     backgroundFunction: async (payload) => {
         const subject = "Forget Password";
         await sendEmail({

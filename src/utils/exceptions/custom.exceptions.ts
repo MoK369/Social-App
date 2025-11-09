@@ -1,9 +1,9 @@
-import { ErrorCodesEnum } from "../constants/enum.constants.js";
+import { ErrorCodesEnum } from "../constants/enum.constants.ts";
 import type { IssueObjectType } from "../types/issue.type.ts";
 
 export class ApplicatonException extends Error {
   constructor(
-    public code: ErrorCodesEnum,
+    public code: string,
     public override message: string,
     public statusCode: number = 400,
     public details?: IssueObjectType[],
@@ -72,6 +72,26 @@ export class ForbiddenException extends ApplicatonException {
 export class TooManyRequestsException extends ApplicatonException {
   constructor(message: string, details?: IssueObjectType[], cause?: unknown) {
     super(ErrorCodesEnum.TOO_MANY_RQUESTS, message, 429, details, cause);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class S3Exception extends ApplicatonException {
+  constructor(
+    awsS3Error: any | undefined,
+    message: string,
+    details?: IssueObjectType[],
+    cause?: unknown
+  ) {
+    super(
+      awsS3Error?.Code || ErrorCodesEnum.ASSET_ERROR,
+      message +
+        (awsS3Error?.message ? ` (Exact Error: ${awsS3Error.message})` : ""),
+      awsS3Error?.$metadata.httpStatusCode || 400,
+      details,
+      cause
+    );
     this.name = this.constructor.name;
     Error.captureStackTrace(this, this.constructor);
   }

@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema({
     profilePicture: {
         subKey: { type: String },
     },
+    tempProfilePicture: {
+        subKey: { type: String },
+    },
+    coverImages: [{ type: String }],
     gender: {
         type: String,
         enum: Object.values(GenderEnum),

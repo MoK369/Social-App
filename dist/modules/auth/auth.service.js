@@ -3,7 +3,7 @@ import UserModel from "../../db/models/user.model.js";
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException, } from "../../utils/exceptions/custom.exceptions.js";
 import successHandler from "../../utils/handlers/success.handler.js";
 import Hashing from "../../utils/security/hash.security.js";
-import { EmailStatusEnum, EventsEnum, OTPTypesEnum, } from "../../utils/constants/enum.constants.js";
+import { EmailEventsEnum, EmailStatusEnum, OTPTypesEnum, } from "../../utils/constants/enum.constants.js";
 import { generateNumericId } from "../../utils/security/id.security.js";
 import emailEvent from "../../utils/events/email.event.js";
 import Token from "../../utils/security/token.security.js";
@@ -33,7 +33,7 @@ class AuthenticationService {
             ],
         });
         emailEvent.publish({
-            eventName: EventsEnum.verifyEmail,
+            eventName: EmailEventsEnum.verifyEmail,
             payload: { to: email, otp },
         });
         return successHandler({
@@ -92,7 +92,7 @@ class AuthenticationService {
             },
         });
         emailEvent.publish({
-            eventName: EventsEnum.verifyEmail,
+            eventName: EmailEventsEnum.verifyEmail,
             payload: { to: email, otp },
         });
         return successHandler({ res, message: "OTP has been resent!" });
@@ -155,7 +155,7 @@ class AuthenticationService {
             },
         });
         emailEvent.publish({
-            eventName: EventsEnum.resetPassword,
+            eventName: EmailEventsEnum.resetPassword,
             payload: { to: email, otp },
         });
         return successHandler({ res, message: "OTP has been sent!" });

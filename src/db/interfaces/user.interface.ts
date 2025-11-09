@@ -35,6 +35,10 @@ export interface IUser {
     subKey: string | undefined;
     url?: string;
   };
+  tempProfilePicture?: {
+    subKey: string | undefined;
+  };
+  coverImages?: string[];
 
   gender: GenderEnum;
   role: UserRoleEnum;

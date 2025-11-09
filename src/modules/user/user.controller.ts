@@ -18,8 +18,15 @@ userRouter.patch(
     validation: fileValidation.image,
     maxFileSize: 1024 * 1024,
   }),
-  validationMiddleware(UserValidators.profileImage),
+  validationMiddleware(UserValidators.profileImageWithPresignedUrl),
   userService.profileImage
+);
+
+userRouter.patch(
+  "/profile-image-presigned-url",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(UserValidators.profileImageWithPresignedUrl),
+  userService.profileImageWithPresignedUrl
 );
 
 userRouter.post(

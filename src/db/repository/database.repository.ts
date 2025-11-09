@@ -64,6 +64,54 @@ abstract class DatabaseRepository<TDocument> {
       options
     );
   };
+
+  updateById = async ({
+    id,
+    update,
+    options = {},
+  }: {
+    id: Types.ObjectId | string;
+    update: UpdateQuery<TDocument>;
+    options?: MongooseUpdateQueryOptions<TDocument>;
+  }): Promise<UpdateWriteOpResult> => {
+    return this.model.updateOne(
+      { _id: id },
+      { ...update, $inc: { __v: 1 } },
+      options
+    );
+  };
+
+  findOneAndUpdate = async ({
+    filter = {},
+    update,
+    options = { new: true },
+  }: {
+    filter?: RootFilterQuery<TDocument>;
+    update: UpdateQuery<TDocument>;
+    options?: QueryOptions<TDocument>;
+  }): Promise<HydratedDocument<TDocument> | null> => {
+    return this.model.findOneAndUpdate(
+      filter,
+      { ...update, $inc: { __v: 1 } },
+      options
+    );
+  };
+
+  findByIdAndUpdate = async ({
+    id,
+    update,
+    options = { new: true },
+  }: {
+    id: Types.ObjectId | string;
+    update: UpdateQuery<TDocument>;
+    options?: QueryOptions<TDocument>;
+  }): Promise<HydratedDocument<TDocument> | null> => {
+    return this.model.findByIdAndUpdate(
+      id,
+      { ...update, $inc: { __v: 1 } },
+      options
+    );
+  };
 }
 
 export default DatabaseRepository;

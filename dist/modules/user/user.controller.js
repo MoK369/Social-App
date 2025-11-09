@@ -12,7 +12,8 @@ userRouter.patch("/profile-image", Auths.authenticationMiddleware(), CloudMulter
     fieldName: "image",
     validation: fileValidation.image,
     maxFileSize: 1024 * 1024,
-}), validationMiddleware(UserValidators.profileImage), userService.profileImage);
+}), validationMiddleware(UserValidators.profileImageWithPresignedUrl), userService.profileImage);
+userRouter.patch("/profile-image-presigned-url", Auths.authenticationMiddleware(), validationMiddleware(UserValidators.profileImageWithPresignedUrl), userService.profileImageWithPresignedUrl);
 userRouter.post("/logout", Auths.authenticationMiddleware(), validationMiddleware(UserValidators.logout), userService.logout);
 userRouter.post("/refresh-token", Auths.authenticationMiddleware({ tokenType: TokenTypesEnum.refresh }), userService.refreshToken);
 export default userRouter;

@@ -23,11 +23,17 @@ export enum ErrorCodesEnum {
   UNAUTHORIZED = "UNAUTHORIZED",
   FORBIDDEN = "FORBIDDEN",
   TOO_MANY_RQUESTS = "TOO_MANY_REQUESTS",
+  ASSET_ERROR = "ASSET_ERROR",
 }
 
-export enum EventsEnum {
+export enum EmailEventsEnum {
   verifyEmail = "verifyEmail",
   resetPassword = "resetPassword",
+}
+
+export enum S3EventsEnum {
+  trackProfileImageUpload = "trackProfileImageUpload",
+  trackCoverImageUpload = "trackCoverImageUpload",
 }
 
 export enum SignatureLevelsEnum {

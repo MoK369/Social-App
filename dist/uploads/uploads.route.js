@@ -7,9 +7,9 @@ const uploadsRouter = Router();
 uploadsRouter.get("/presignd-url/*path", async (req, res) => {
     const { download, downloadName } = req.query;
     const { path } = req.params;
-    const key = path.join("/");
+    const SubKey = path.join("/");
     const signedUrl = await S3Service.createPresignedGetUrl({
-        Key: key,
+        SubKey,
         download,
         downloadName,
     });
@@ -22,20 +22,16 @@ uploadsRouter.get("/presignd-url/*path", async (req, res) => {
 uploadsRouter.get("/*path", async (req, res) => {
     const { download, downloadName } = req.query;
     const { path } = req.params;
-    const key = path.join("/");
-    const s3Response = await S3Service.getFile({ Key: key });
+    const SubKey = path.join("/");
+    const s3Response = await S3Service.getFile({ SubKey });
     if (!s3Response.Body) {
         throw new BadRequestException("Failed to fetch this asset ☹️");
     }
-    console.log({
-        s3Response: s3Response,
-        typeof: typeof s3Response.Body,
-    });
     res.setHeader("Content-Type", s3Response.ContentType || "application/octet-stream");
     if (download === "true") {
         res.setHeader("Content-Disposition", `attachment; filename="${downloadName
             ? `${downloadName}.${s3Response.ContentType?.split("/")[1]}`
-            : key.split("/").pop()}"`);
+            : SubKey.split("/").pop()}"`);
     }
     return asyncPipeline({
         source: s3Response.Body,

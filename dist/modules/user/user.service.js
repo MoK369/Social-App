@@ -6,6 +6,9 @@ import RevokedTokenRepository from "../../db/repository/revoked_token.repository
 import Token from "../../utils/security/token.security.js";
 import S3Service from "../../utils/multer/s3.service.js";
 import KeyUtil from "../../utils/multer/key.multer.js";
+import s3Events from "../../utils/events/s3.events.js";
+import { S3EventsEnum } from "../../utils/constants/enum.constants.js";
+import { BadRequestException } from "../../utils/exceptions/custom.exceptions.js";
 class UserService {
     userRepository = new UserRepository(UserModel);
     revokedTokenRepository = new RevokedTokenRepository(RevokedTokenModel);
@@ -24,7 +27,7 @@ class UserService {
         const { subKey } = req.user?.profilePicture || {};
         if (subKey) {
             await S3Service.deleteFile({
-                Key: KeyUtil.generateS3KeyFromSubKey(subKey),
+                SubKey: subKey,
             });
         }
         const uploadSubKey = await S3Service.uploadFile({
@@ -51,12 +54,34 @@ class UserService {
         const { url, key } = await S3Service.createPresignedUploadUrl({
             contentType,
             originalname,
-            Path: `users/${req.tokenPayload?.id}`,
+            Path: `users/${req.tokenPayload?.id}/profile`,
+        });
+        const user = await this.userRepository.findByIdAndUpdate({
+            id: req.user._id,
+            update: {
+                profilePicture: { subKey: key },
+                tempProfilePicture: { subKey: req.user.profilePicture?.subKey },
+            },
+            options: {
+                new: true,
+                projection: { profilePicture: 1 },
+            },
+        });
+        if (!user) {
+            throw new BadRequestException("Invalid account");
+        }
+        s3Events.publish({
+            eventName: S3EventsEnum.trackProfileImageUpload,
+            payload: {
+                userId: user._id,
+                oldSubKey: req.user.profilePicture?.subKey,
+                newSubKey: key,
+            },
         });
         return successHandler({
             res,
             message: "Image Uploaded !",
-            body: { url, key },
+            body: { url, user },
         });
     };
     logout = async (req, res) => {

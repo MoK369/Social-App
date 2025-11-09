@@ -72,3 +72,11 @@ export class TooManyRequestsException extends ApplicatonException {
         Error.captureStackTrace(this, this.constructor);
     }
 }
+export class S3Exception extends ApplicatonException {
+    constructor(awsS3Error, message, details, cause) {
+        super(awsS3Error?.Code || ErrorCodesEnum.ASSET_ERROR, message +
+            (awsS3Error?.message ? ` (Exact Error: ${awsS3Error.message})` : ""), awsS3Error?.$metadata.httpStatusCode || 400, details, cause);
+        this.name = this.constructor.name;
+        Error.captureStackTrace(this, this.constructor);
+    }
+}

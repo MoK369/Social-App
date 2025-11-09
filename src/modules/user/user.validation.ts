@@ -80,6 +80,13 @@ class UserValidators {
         }
       }),
   };
+
+  static profileImageWithPresignedUrl = {
+    body: z.strictObject({
+      contentType: generalValidationFields.imageContentTypes,
+      originalname: generalValidationFields.originalName,
+    }),
+  };
 }
 
 export default UserValidators;

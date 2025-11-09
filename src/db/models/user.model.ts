@@ -29,9 +29,14 @@ const userSchema = new mongoose.Schema<IUser>(
     changeCredentialsTime: { type: Date },
 
     phone: { type: String, required: true },
+
     profilePicture: {
       subKey: { type: String },
     },
+    tempProfilePicture: {
+      subKey: { type: String },
+    },
+    coverImages: [{ type: String }],
 
     gender: {
       type: String,

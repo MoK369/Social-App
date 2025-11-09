@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Buffer } from "buffer";
+import fileValidation from "../multer/file_validation.multer.js";
 const generalValidationFields = {
     phone: z.string().regex(/^(002|\+2)?01[0125][0-9]{8}$/),
     password: z
@@ -28,11 +29,13 @@ const generalValidationFields = {
         filename: z.string(),
         path: z.string(),
         size: z.number().positive(),
-        buffer: z
-            .instanceof(Buffer)
-            .refine((buffer) => buffer.length > 0, {
+        buffer: z.instanceof(Buffer).refine((buffer) => buffer.length > 0, {
             error: "Buffer must not be empty",
         }),
     },
+    originalName: z.string().regex(/^\w{3,}\.(jpg|jpeg|png|gif|pdf|docx|txt)$/, {
+        error: "Invalid original file name",
+    }),
+    imageContentTypes: z.enum(Object.values(fileValidation.image)),
 };
 export default generalValidationFields;
