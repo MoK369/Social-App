@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import { GenderEnum, UserRoleEnum, } from "../../utils/constants/enum.constants.js";
+import EncryptionSecurityUtil from "../../utils/security/encryption.security.js";
+import Hashing from "../../utils/security/hash.security.js";
 const userSchema = new mongoose.Schema({
     firstName: { type: String, required: true, minlength: 2, maxlength: 25 },
     lastName: { type: String, required: true, minlength: 2, maxlength: 25 },
@@ -37,6 +39,14 @@ const userSchema = new mongoose.Schema({
         enum: Object.values(UserRoleEnum),
         default: UserRoleEnum.USER,
     },
+    freezed: {
+        at: Date,
+        by: { type: mongoose.Types.ObjectId, ref: "User" },
+    },
+    restored: {
+        at: Date,
+        by: { type: mongoose.Types.ObjectId, ref: "User" },
+    },
 }, {
     timestamps: true,
     toJSON: { virtuals: true },
@@ -65,6 +75,22 @@ userSchema
     .set(function (value) {
     const [firstName, lastName] = value.split(" ");
     this.set({ firstName, lastName });
+});
+userSchema.pre("save", async function () {
+    if (this.isModified("password") &&
+        !Hashing.isHashed({ text: this.password })) {
+        console.log("hashing the password");
+        this.password = await Hashing.generateHash({ plainText: this.password });
+    }
+    if (this.isModified("phone") &&
+        !EncryptionSecurityUtil.isEncrypted({ text: this.phone })) {
+        this.phone = EncryptionSecurityUtil.encryptText({ plainText: this.phone });
+    }
+});
+userSchema.post("init", async function () {
+    if (this.phone && EncryptionSecurityUtil.isEncrypted({ text: this.phone })) {
+        this.phone = EncryptionSecurityUtil.decryptText({ cipherText: this.phone });
+    }
 });
 const UserModel = mongoose.models.User || mongoose.model("User", userSchema);
 export default UserModel;

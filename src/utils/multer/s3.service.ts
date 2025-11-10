@@ -30,7 +30,7 @@ class S3Service {
 
   static uploadFile = async ({
     StorageApproach = StorageTypesEnum.memory,
-    Bucket = process.env.AWS_BUCKET_NAME,
+    Bucket = process.env.AWS_BUCKET_NAME!,
     ACL = "private",
     Path = "general",
     File,
@@ -64,6 +64,37 @@ class S3Service {
       throw new S3Exception(undefined, "Failed to Retrieve Upload Key");
     }
     return subKey;
+  };
+
+  static uploadFiles = async ({
+    StorageApproach = StorageTypesEnum.memory,
+    Bucket = process.env.AWS_BUCKET_NAME!,
+    ACL = "private",
+    Path = "general",
+    Files,
+  }: {
+    StorageApproach?: StorageTypesEnum;
+    Bucket?: string;
+    ACL?: ObjectCannedACL;
+    Path?: string;
+    Files: Express.Multer.File[];
+  }): Promise<string[]> => {
+    const subKeys = await Promise.all(
+      Files.map(
+        (File): Promise<string> =>
+          this.uploadFile({
+            File,
+            StorageApproach,
+            Bucket,
+            ACL,
+            Path,
+          })
+      )
+    );
+    if (subKeys.length == 0) {
+      throw new S3Exception(undefined, "Failed to Retrieve Upload Keys");
+    }
+    return subKeys;
   };
 
   static uploadLargeFile = async ({
@@ -110,6 +141,38 @@ class S3Service {
       throw new S3Exception(undefined, "Failed to Retrieve Upload Key");
     }
     return subKey;
+  };
+
+  static uploadLargeFiles = async ({
+    StorageApproach = StorageTypesEnum.disk,
+    Bucket = process.env.AWS_BUCKET_NAME!,
+    ACL = "private",
+    Path = "general",
+    Files,
+  }: {
+    StorageApproach?: StorageTypesEnum;
+    Bucket?: string;
+    ACL?: ObjectCannedACL;
+    Path?: string;
+    Files: Express.Multer.File[];
+  }): Promise<string[]> => {
+    const subKeys = await Promise.all(
+      Files.map((File) =>
+        this.uploadLargeFile({
+          File,
+          StorageApproach,
+          Bucket,
+          ACL,
+          Path,
+        })
+      )
+    );
+
+    if ((subKeys.length = 0)) {
+      throw new S3Exception(undefined, "Failed to Retrieve Upload Keys");
+    }
+
+    return subKeys;
   };
 
   static createPresignedUploadUrl = async ({

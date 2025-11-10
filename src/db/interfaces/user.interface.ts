@@ -45,6 +45,14 @@ export interface IUser {
 
   createdAt: Date;
   updatedAt: Date;
+  freezed?: {
+    at: Date;
+    by: Types.ObjectId;
+  };
+  restored?: {
+    at: Date;
+    by: Types.ObjectId;
+  };
 }
 
 export type HIUser = HydratedDocument<IUser>;

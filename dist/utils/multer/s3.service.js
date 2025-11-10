@@ -35,6 +35,19 @@ class S3Service {
         }
         return subKey;
     };
+    static uploadFiles = async ({ StorageApproach = StorageTypesEnum.memory, Bucket = process.env.AWS_BUCKET_NAME, ACL = "private", Path = "general", Files, }) => {
+        const subKeys = await Promise.all(Files.map((File) => this.uploadFile({
+            File,
+            StorageApproach,
+            Bucket,
+            ACL,
+            Path,
+        })));
+        if (subKeys.length == 0) {
+            throw new S3Exception(undefined, "Failed to Retrieve Upload Keys");
+        }
+        return subKeys;
+    };
     static uploadLargeFile = async ({ StorageApproach = StorageTypesEnum.disk, Bucket = process.env.AWS_BUCKET_NAME, ACL = "private", Path = "general", File, }) => {
         const subKey = KeyUtil.generateS3SubKey({
             Path,
@@ -63,6 +76,19 @@ class S3Service {
             throw new S3Exception(undefined, "Failed to Retrieve Upload Key");
         }
         return subKey;
+    };
+    static uploadLargeFiles = async ({ StorageApproach = StorageTypesEnum.disk, Bucket = process.env.AWS_BUCKET_NAME, ACL = "private", Path = "general", Files, }) => {
+        const subKeys = await Promise.all(Files.map((File) => this.uploadLargeFile({
+            File,
+            StorageApproach,
+            Bucket,
+            ACL,
+            Path,
+        })));
+        if ((subKeys.length = 0)) {
+            throw new S3Exception(undefined, "Failed to Retrieve Upload Keys");
+        }
+        return subKeys;
     };
     static createPresignedUploadUrl = async ({ Bucket = process.env.AWS_BUCKET_NAME, originalname, Path = "general", contentType, expiresIn = Number(process.env.AWS_PRESIGNED_URL_EXPIRES_IN_SECONDS), }) => {
         const subKey = KeyUtil.generateS3SubKey({

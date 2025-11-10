@@ -6,7 +6,7 @@ import { generateAlphaNumaricId } from "../security/id.security.js";
 import { ValidationException } from "../exceptions/custom.exceptions.js";
 class CloudMulter {
     static _tempFolderPath = "./Temp";
-    static cloudFileUpload = ({ validation = [], maxFileSize = 512 * 1024, storageApproach = StorageTypesEnum.memory, } = {}) => {
+    static cloudFileUpload = ({ fieldName, validation = [], maxFileSize = 512 * 1024, storageApproach = StorageTypesEnum.memory, }) => {
         const storage = storageApproach === StorageTypesEnum.memory
             ? multer.memoryStorage()
             : multer.diskStorage({
@@ -27,7 +27,7 @@ class CloudMulter {
         const fileFilter = (req, file, callback) => {
             if (!validation.includes(file.mimetype)) {
                 callback(new ValidationException("Invalid File. File must be an image", [
-                    { path: "image", message: "Invalid File Format!" },
+                    { key: "body", path: fieldName, message: "Invalid File Format!" },
                 ]));
             }
             callback(null, true);
@@ -35,17 +35,35 @@ class CloudMulter {
         return multer({ storage, fileFilter, limits: { fileSize: maxFileSize } });
     };
     static handleSingleFileUpload = ({ fieldName, validation = [], maxFileSize = 512 * 1024, storageApproach = StorageTypesEnum.memory, }) => {
-        return (req, res, next) => this.cloudFileUpload({ validation, maxFileSize, storageApproach }).single(fieldName)(req, res, function (err) {
-            if (err) {
-                if (err.code == "LIMIT_FILE_SIZE")
-                    next(new ValidationException("File is too large", [
-                        { path: fieldName, message: "Invalid Image Size" },
-                    ]));
-                else
-                    next(err);
-            }
-            next();
+        return (req, res, next) => this.cloudFileUpload({
+            fieldName,
+            validation,
+            maxFileSize,
+            storageApproach,
+        }).single(fieldName)(req, res, (err) => {
+            this._errorHandleFunction(fieldName, err, next);
         });
+    };
+    static handleMultiFilesUpload = ({ fieldName, maxCount = 100, validation = [], maxFileSize = 512 * 1024, storageApproach = StorageTypesEnum.memory, }) => {
+        return (req, res, next) => this.cloudFileUpload({
+            fieldName,
+            validation,
+            maxFileSize,
+            storageApproach,
+        }).array(fieldName, maxCount)(req, res, (err) => {
+            this._errorHandleFunction(fieldName, err, next);
+        });
+    };
+    static _errorHandleFunction = (fieldName, err, next) => {
+        if (err) {
+            if (err.code == "LIMIT_FILE_SIZE")
+                next(new ValidationException("File is too large 📁", [
+                    { key: "body", path: fieldName, message: "Invalid Image Size" },
+                ]));
+            else
+                next(err);
+        }
+        next();
     };
 }
 export default CloudMulter;

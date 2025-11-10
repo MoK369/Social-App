@@ -1,7 +1,11 @@
 import { z } from "zod";
 import { Buffer } from "buffer";
 import fileValidation from "../multer/file_validation.multer.js";
+import { Types } from "mongoose";
 const generalValidationFields = {
+    objectId: z.string().refine((value) => {
+        return Types.ObjectId.isValid(value);
+    }, { error: "Invalid userId" }),
     phone: z.string().regex(/^(002|\+2)?01[0125][0-9]{8}$/),
     password: z
         .string()

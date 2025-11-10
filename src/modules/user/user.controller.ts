@@ -6,6 +6,7 @@ import UserValidators from "./user.validation.ts";
 import { TokenTypesEnum } from "../../utils/constants/enum.constants.ts";
 import CloudMulter from "../../utils/multer/cloud.multer.ts";
 import fileValidation from "../../utils/multer/file_validation.multer.ts";
+import userAuthorizationEndpoints from "./user.authorization.ts";
 
 const userRouter = Router();
 
@@ -18,7 +19,7 @@ userRouter.patch(
     validation: fileValidation.image,
     maxFileSize: 1024 * 1024,
   }),
-  validationMiddleware(UserValidators.profileImageWithPresignedUrl),
+  validationMiddleware(UserValidators.profileImage),
   userService.profileImage
 );
 
@@ -27,6 +28,19 @@ userRouter.patch(
   Auths.authenticationMiddleware(),
   validationMiddleware(UserValidators.profileImageWithPresignedUrl),
   userService.profileImageWithPresignedUrl
+);
+
+userRouter.patch(
+  "/profile-cover-images",
+  Auths.authenticationMiddleware(),
+  CloudMulter.handleMultiFilesUpload({
+    fieldName: "images",
+    validation: fileValidation.image,
+    maxCount: 2,
+    maxFileSize: 1024 * 1024,
+  }),
+  validationMiddleware(UserValidators.profileCoverImages),
+  userService.profileCoverImages
 );
 
 userRouter.post(
@@ -40,6 +54,27 @@ userRouter.post(
   "/refresh-token",
   Auths.authenticationMiddleware({ tokenType: TokenTypesEnum.refresh }),
   userService.refreshToken
+);
+
+userRouter.delete(
+  "{/:userId}/freeze-account",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(UserValidators.freezeAccount),
+  userService.freezeAccount
+);
+
+userRouter.patch(
+  "/:userId/restore-account",
+  Auths.combined({ accessRoles: userAuthorizationEndpoints.restoreAccount }),
+  validationMiddleware(UserValidators.restoreAccount),
+  userService.restoreAccount
+);
+
+userRouter.delete(
+  "/:userId/delete-account",
+  Auths.combined({ accessRoles: userAuthorizationEndpoints.deleteAccount }),
+  validationMiddleware(UserValidators.deleteAccount),
+  userService.hardDeleteAccount
 );
 
 export default userRouter;

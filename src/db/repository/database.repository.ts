@@ -1,4 +1,5 @@
-import type { UpdateWriteOpResult } from "mongoose";
+import type { DeleteResult, UpdateWriteOpResult } from "mongoose";
+import type { MongooseBaseQueryOptions } from "mongoose";
 import type {
   HydratedDocument,
   MongooseUpdateQueryOptions,
@@ -12,6 +13,18 @@ import type { CreateOptions, Model } from "mongoose";
 
 abstract class DatabaseRepository<TDocument> {
   constructor(protected readonly model: Model<TDocument>) {}
+
+  create = async ({
+    data,
+    options = {
+      validateBeforeSave: true,
+    },
+  }: {
+    data: Partial<TDocument>[];
+    options?: CreateOptions;
+  }): Promise<HydratedDocument<TDocument>[]> => {
+    return this.model.create(data, options);
+  };
 
   findOne = async ({
     filter,
@@ -35,18 +48,6 @@ abstract class DatabaseRepository<TDocument> {
     options?: QueryOptions<TDocument>;
   }): Promise<HydratedDocument<TDocument> | null> => {
     return this.model.findById(id, projection, options);
-  };
-
-  create = async ({
-    data,
-    options = {
-      validateBeforeSave: true,
-    },
-  }: {
-    data: Partial<TDocument>[];
-    options?: CreateOptions;
-  }): Promise<HydratedDocument<TDocument>[]> => {
-    return this.model.create(data, options);
   };
 
   updateOne = async ({
@@ -111,6 +112,16 @@ abstract class DatabaseRepository<TDocument> {
       { ...update, $inc: { __v: 1 } },
       options
     );
+  };
+
+  deleteOne = async ({
+    filter = {},
+    options = {},
+  }: {
+    filter?: RootFilterQuery<TDocument>;
+    options?: MongooseBaseQueryOptions<TDocument>;
+  }): Promise<DeleteResult> => {
+    return this.model.deleteOne(filter, options);
   };
 }
 

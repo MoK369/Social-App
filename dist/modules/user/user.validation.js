@@ -76,5 +76,56 @@ class UserValidators {
             originalname: generalValidationFields.originalName,
         }),
     };
+    static profileCoverImages = {
+        files: z
+            .array(z
+            .strictObject({
+            fieldname: generalValidationFields.fileKeys.fieldname,
+            originalname: generalValidationFields.fileKeys.originalname,
+            encoding: generalValidationFields.fileKeys.encoding,
+            mimetype: generalValidationFields.fileKeys.mimetype,
+            buffer: generalValidationFields.fileKeys.buffer,
+            size: generalValidationFields.fileKeys.size.max(1024 * 1024),
+        }, { error: "image is missing" })
+            .superRefine((data, ctx) => {
+            if (data.fieldname !== "images") {
+                ctx.addIssue({
+                    code: "custom",
+                    path: ["images"],
+                    message: "image field is required",
+                });
+            }
+            if (!fileValidation.image.includes(data.mimetype)) {
+                ctx.addIssue({
+                    code: "custom",
+                    path: ["images"],
+                    message: "Invalid Image Type!",
+                });
+            }
+        }), { error: "Cover images are required" })
+            .min(1, "At least 1 cover image should be uploaded")
+            .max(2, "Maximum cover images are 2"),
+    };
+    static freezeAccount = {
+        params: z
+            .strictObject({
+            userId: generalValidationFields.objectId.optional(),
+        })
+            .optional(),
+    };
+    static restoreAccount = {
+        params: z.strictObject({
+            userId: generalValidationFields.objectId,
+        }, {
+            error: "params argument is missing",
+        }),
+    };
+    static deleteAccount = {
+        params: z.strictObject({
+            userId: generalValidationFields.objectId,
+        }, {
+            error: "params argument is missing",
+        }),
+    };
 }
 export default UserValidators;

@@ -2,15 +2,28 @@ import type { Request, Response } from "express";
 import UserModel from "../../db/models/user.model.ts";
 import UserRepository from "../../db/repository/user.respository.ts";
 import successHandler from "../../utils/handlers/success.handler.ts";
-import type { LogoutBodyTypeDto } from "./user.dto.ts";
+import type {
+  DeleteAccountParamsTypeDto,
+  FreezeAccountParamsTypeDto,
+  LogoutBodyTypeDto,
+  ProfileImageWithPresignedUrlBodyTypeDto,
+  RestoreAccountParamsTypeDto,
+} from "./user.dto.ts";
 import RevokedTokenModel from "../../db/models/revoked_token.model.ts";
 import RevokedTokenRepository from "../../db/repository/revoked_token.repository.ts";
 import Token from "../../utils/security/token.security.ts";
 import S3Service from "../../utils/multer/s3.service.ts";
 import KeyUtil from "../../utils/multer/key.multer.ts";
 import s3Events from "../../utils/events/s3.events.ts";
-import { S3EventsEnum } from "../../utils/constants/enum.constants.ts";
-import { BadRequestException } from "../../utils/exceptions/custom.exceptions.ts";
+import {
+  S3EventsEnum,
+  UserRoleEnum,
+} from "../../utils/constants/enum.constants.ts";
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from "../../utils/exceptions/custom.exceptions.ts";
 
 class UserService {
   protected userRepository = new UserRepository(UserModel);
@@ -31,6 +44,11 @@ class UserService {
   };
 
   profileImage = async (req: Request, res: Response): Promise<Response> => {
+    const uploadSubKey = await S3Service.uploadFile({
+      File: req.file!,
+      Path: `users/${req.tokenPayload?.id}/profile`,
+    });
+
     const { subKey } = req.user?.profilePicture || {};
     if (subKey) {
       // delete previous image from s3
@@ -38,11 +56,6 @@ class UserService {
         SubKey: subKey,
       });
     }
-
-    const uploadSubKey = await S3Service.uploadFile({
-      File: req.file!,
-      Path: `users/${req.tokenPayload?.id}/profile`,
-    });
 
     await this.userRepository.updateOne({
       filter: { _id: req.user!._id! },
@@ -68,7 +81,7 @@ class UserService {
     const {
       contentType,
       originalname,
-    }: { contentType: string; originalname: string } = req.body;
+    }: ProfileImageWithPresignedUrlBodyTypeDto = req.body;
     const { url, key } = await S3Service.createPresignedUploadUrl({
       contentType,
       originalname,
@@ -105,6 +118,121 @@ class UserService {
       message: "Image Uploaded !",
       body: { url, user },
     });
+  };
+
+  profileCoverImages = async (
+    req: Request,
+    res: Response
+  ): Promise<Response> => {
+    const uploadSubKeys = await S3Service.uploadFiles({
+      Files: req.files! as Express.Multer.File[],
+      Path: `users/${req.tokenPayload?.id}/profile/covers`,
+    });
+
+    if (req.user!.coverImages && req.user!.coverImages.length > 0) {
+      await S3Service.deleteFiles({ SubKeys: req.user!.coverImages });
+    }
+
+    const user = await this.userRepository.findByIdAndUpdate({
+      id: req.user!._id,
+      update: {
+        coverImages: uploadSubKeys,
+      },
+      options: {
+        new: true,
+        projection: { coverImages: 1 },
+      },
+    });
+
+    return successHandler({
+      res,
+      message: "Cover Images Uploaded Successfully!",
+      body: {
+        coverImages: user?.coverImages!.map((subKey) =>
+          KeyUtil.generateS3UploadsUrlFromSubKey({ req, subKey })
+        ),
+      },
+    });
+  };
+
+  freezeAccount = async (req: Request, res: Response): Promise<Response> => {
+    const { userId }: FreezeAccountParamsTypeDto = req.params;
+
+    if (userId && req.user!.role !== UserRoleEnum.ADMIN) {
+      throw new ForbiddenException("Not Authorized User");
+    }
+
+    const result = await this.userRepository.updateOne({
+      filter: {
+        _id: userId || req.user!._id!,
+        freezed: { $exists: false },
+      },
+      update: {
+        freezed: {
+          at: new Date(),
+          by: req.user!._id,
+        },
+        changeCredentialsTime: new Date(),
+        $unset: {
+          restored: true,
+        },
+      },
+    });
+
+    if (result.modifiedCount === 0) {
+      throw new NotFoundException("user not found or already freezed");
+    }
+
+    return successHandler({ res, message: "Account Freezed!" });
+  };
+
+  restoreAccount = async (req: Request, res: Response): Promise<Response> => {
+    const { userId } = req.params as RestoreAccountParamsTypeDto;
+
+    const result = await this.userRepository.updateOne({
+      filter: {
+        _id: userId,
+        freezed: { $exists: true },
+        "freezed.by": { $ne: userId },
+      },
+      update: {
+        restored: {
+          at: new Date(),
+          by: req.user!._id,
+        },
+        $unset: {
+          freezed: true,
+        },
+      },
+    });
+
+    if (result.modifiedCount === 0) {
+      throw new NotFoundException("user not found or already restored");
+    }
+
+    return successHandler({ res, message: "Account Restored!" });
+  };
+
+  hardDeleteAccount = async (
+    req: Request,
+    res: Response
+  ): Promise<Response> => {
+    const { userId } = req.params as DeleteAccountParamsTypeDto;
+
+    const result = await this.userRepository.deleteOne({
+      filter: {
+        _id: userId,
+        freezed: { $exists: true },
+      },
+    });
+
+    if (result.deletedCount === 0) {
+      throw new NotFoundException("invalid user account or already deleted");
+    }
+
+    await S3Service.deleteFolderByPrefix({ FolderPath: `users/${userId}` });
+
+    return successHandler({ res, message: "Account Deleted Permanently!" });
   };
 
   logout = async (req: Request, res: Response): Promise<Response> => {

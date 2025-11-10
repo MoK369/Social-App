@@ -47,7 +47,7 @@ class AuthenticationService {
         {
           fullName,
           email,
-          password: await Hashing.generateHash({ plainText: password }),
+          password,
           phone,
           gender,
           confirmEmailOtp: {
@@ -138,8 +138,11 @@ class AuthenticationService {
   login = async (req: Request, res: Response): Promise<Response> => {
     const { email, password }: LoginBodyDtoType = req.body;
 
-    const user: HIUser | null = await this.userRepository.findByEmail({
-      email,
+    const user: HIUser | null = await this.userRepository.findOne({
+      filter: {
+        email,
+        freezed: { $exists: false },
+      },
     });
     if (!user) {
       throw new NotFoundException("Invalid Login Credentials");
