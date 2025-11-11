@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Model } from "mongoose";
 import type { IUser } from "../interfaces/user.interface.ts";
 import {
   GenderEnum,
@@ -117,6 +117,7 @@ userSchema.post("init", async function () {
 });
 
 const UserModel =
-  mongoose.models.User || mongoose.model<IUser>("User", userSchema);
+  (mongoose.models.User as Model<IUser>) ||
+  mongoose.model<IUser>("User", userSchema);
 
 export default UserModel;

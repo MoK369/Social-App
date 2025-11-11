@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Model } from "mongoose";
 import { GenderEnum, UserRoleEnum, } from "../../utils/constants/enum.constants.js";
 import EncryptionSecurityUtil from "../../utils/security/encryption.security.js";
 import Hashing from "../../utils/security/hash.security.js";
@@ -92,5 +92,6 @@ userSchema.post("init", async function () {
         this.phone = EncryptionSecurityUtil.decryptText({ cipherText: this.phone });
     }
 });
-const UserModel = mongoose.models.User || mongoose.model("User", userSchema);
+const UserModel = mongoose.models.User ||
+    mongoose.model("User", userSchema);
 export default UserModel;

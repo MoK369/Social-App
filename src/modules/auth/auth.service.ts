@@ -28,6 +28,7 @@ import emailEvent from "../../utils/events/email.event.ts";
 import type { HIUser } from "../../db/interfaces/user.interface.ts";
 import Token from "../../utils/security/token.security.ts";
 import OTP from "../../utils/security/otp.security.ts";
+import type { ILoginResponse } from "./auth.entities.ts";
 
 class AuthenticationService {
   private userRepository = new UserRepository(UserModel);
@@ -163,7 +164,7 @@ class AuthenticationService {
 
     const tokenCredentials = Token.getTokensBasedOnRole({ user });
 
-    return successHandler({
+    return successHandler<ILoginResponse>({
       res,
       message: "User logged in successfully",
       body: {

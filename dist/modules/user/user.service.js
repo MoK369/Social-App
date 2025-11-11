@@ -21,7 +21,11 @@ class UserService {
             });
             user.profilePicture.subKey = undefined;
         }
-        return successHandler({ res, message: "User Profile!", body: user });
+        return successHandler({
+            res,
+            message: "User Profile!",
+            body: user,
+        });
     };
     profileImage = async (req, res) => {
         const uploadSubKey = await S3Service.uploadFile({
@@ -65,6 +69,7 @@ class UserService {
             options: {
                 new: true,
                 projection: { profilePicture: 1 },
+                lean: true,
             },
         });
         if (!user) {
@@ -78,6 +83,13 @@ class UserService {
                 newSubKey: key,
             },
         });
+        if (user.profilePicture?.subKey) {
+            user.profilePicture.url = KeyUtil.generateS3UploadsUrlFromSubKey({
+                req,
+                subKey: user.profilePicture.subKey,
+            });
+            user.profilePicture.subKey = undefined;
+        }
         return successHandler({
             res,
             message: "Image Uploaded !",
@@ -106,7 +118,7 @@ class UserService {
             res,
             message: "Cover Images Uploaded Successfully!",
             body: {
-                coverImages: user?.coverImages.map((subKey) => KeyUtil.generateS3UploadsUrlFromSubKey({ req, subKey })),
+                coverImages: user?.coverImages.map((subKey) => KeyUtil.generateS3UploadsUrlFromSubKey({ req, subKey })) || [],
             },
         });
     };
