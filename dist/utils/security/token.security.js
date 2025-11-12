@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { LogoutStatusEnum, SignatureLevelsEnum, TokenTypesEnum, UserRoleEnum, } from "../constants/enum.constants.js";
 import { BadRequestException, ServerException, UnauthorizedException, } from "../exceptions/custom.exceptions.js";
 import UserRepository from "../../db/repository/user.respository.js";
-import UserModel from "../../db/models/user.model.js";
+import { UserModel } from "../../db/models/user.model.js";
 import { generateAlphaNumaricId } from "./id.security.js";
 import RevokedTokenRepository from "../../db/repository/revoked_token.repository.js";
 import RevokedTokenModel from "../../db/models/revoked_token.model.js";

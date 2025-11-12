@@ -1,5 +1,5 @@
 import UserRepository from "../../db/repository/user.respository.js";
-import UserModel from "../../db/models/user.model.js";
+import { UserModel } from "../../db/models/user.model.js";
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException, } from "../../utils/exceptions/custom.exceptions.js";
 import successHandler from "../../utils/handlers/success.handler.js";
 import Hashing from "../../utils/security/hash.security.js";
@@ -99,6 +99,7 @@ class AuthenticationService {
     };
     login = async (req, res) => {
         const { email, password } = req.body;
+        console.log({ host: process.env.HOST, protocol: process.env.PROTOCOL });
         const user = await this.userRepository.findOne({
             filter: {
                 email,

@@ -4,7 +4,7 @@ import { S3EventsEnum } from "../constants/enum.constants.ts";
 import type { IS3UploadPayload } from "../constants/interface.constants.ts";
 import S3Service from "../multer/s3.service.ts";
 import UserRepository from "../../db/repository/user.respository.ts";
-import UserModel from "../../db/models/user.model.ts";
+import {UserModel} from "../../db/models/user.model.ts";
 import type { UpdateQuery } from "mongoose";
 import type { IUser } from "../../db/interfaces/user.interface.ts";
 

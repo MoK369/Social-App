@@ -7,8 +7,9 @@ import {
 import EncryptionSecurityUtil from "../../utils/security/encryption.security.ts";
 import Hashing from "../../utils/security/hash.security.ts";
 import ModelsNames from "../../utils/constants/models_names.constants.ts";
+import KeyUtil from "../../utils/multer/key.multer.ts";
 
-const userSchema = new mongoose.Schema<IUser>(
+export const userSchema = new mongoose.Schema<IUser>(
   {
     firstName: { type: String, required: true, minlength: 2, maxlength: 25 },
     lastName: { type: String, required: true, minlength: 2, maxlength: 25 },
@@ -82,6 +83,7 @@ const userSchema = new mongoose.Schema<IUser>(
 
 userSchema.methods.toJSON = function () {
   const { id, fullName, ...restObj }: IUser = this.toObject();
+
   return {
     id: this._id,
     fullName,
@@ -90,11 +92,41 @@ userSchema.methods.toJSON = function () {
     gender: restObj.gender,
     role: restObj.role,
     profilePicture: restObj.profilePicture,
+    coverImages: restObj.coverImages,
     createdAt: restObj.createdAt,
     updatedAt: restObj.updatedAt,
     confirmedAt: restObj.confirmedAt,
   };
 };
+
+userSchema.set("toObject", {
+  transform: (doc, ret) => {
+    console.log("inside toObject transform =========");
+    console.log({ doc, ret });
+
+    if (ret?.profilePicture?.subKey) {
+      ret.profilePicture.url = KeyUtil.generateS3UploadsUrlFromSubKey({
+        req: {
+          host: process.env.HOST!,
+          protocol: process.env.PROTOCOL!,
+        },
+        subKey: ret.profilePicture.subKey!,
+      });
+      ret.profilePicture.subKey = undefined;
+    }
+
+    if (ret?.coverImages && ret.coverImages.length > 0) {
+      for (let i = 0; i < ret.coverImages.length; i++) {
+        ret.coverImages[i] = KeyUtil.generateS3UploadsUrlFromSubKey({
+          req: { host: process.env.HOST!, protocol: process.env.PROTOCOL! },
+          subKey: ret.coverImages[i]!,
+        });
+      }
+    }
+
+    return ret;
+  },
+});
 
 userSchema
   .virtual("fullName")
@@ -130,8 +162,6 @@ userSchema.post("init", async function () {
   }
 });
 
-const UserModel =
+export const UserModel =
   (mongoose.models.User as Model<IUser>) ||
   mongoose.model<IUser>(ModelsNames.userModel, userSchema);
-
-export default UserModel;

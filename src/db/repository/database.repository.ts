@@ -1,6 +1,7 @@
 import type {
   FindFunctionOptionsType,
   FindFunctionsReturnType,
+  LeanType,
 } from "../../utils/types/find_functions.type.ts";
 import type {
   DeleteResult,
@@ -104,7 +105,7 @@ abstract class DatabaseRepository<TDocument> {
     );
   };
 
-  findByIdAndUpdate = async <TLean extends boolean = false>({
+  findByIdAndUpdate = async <TLean extends LeanType = false>({
     id,
     update,
     options = { new: true },

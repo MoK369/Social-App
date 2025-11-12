@@ -10,7 +10,7 @@ import type {
   VerifyForgetPasswordOtpBodyDtoType,
 } from "./auth.dto.ts";
 import UserRepository from "../../db/repository/user.respository.ts";
-import UserModel from "../../db/models/user.model.ts";
+import {UserModel} from "../../db/models/user.model.ts";
 import {
   BadRequestException,
   ConflictException,
@@ -139,6 +139,9 @@ class AuthenticationService {
 
   login = async (req: Request, res: Response): Promise<Response> => {
     const { email, password }: LoginBodyDtoType = req.body;
+
+    console.log({host: process.env.HOST, protocol: process.env.PROTOCOL});
+    
 
     const user: HIUser | null = await this.userRepository.findOne({
       filter: {

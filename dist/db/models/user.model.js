@@ -3,7 +3,8 @@ import { GenderEnum, UserRoleEnum, } from "../../utils/constants/enum.constants.
 import EncryptionSecurityUtil from "../../utils/security/encryption.security.js";
 import Hashing from "../../utils/security/hash.security.js";
 import ModelsNames from "../../utils/constants/models_names.constants.js";
-const userSchema = new mongoose.Schema({
+import KeyUtil from "../../utils/multer/key.multer.js";
+export const userSchema = new mongoose.Schema({
     firstName: { type: String, required: true, minlength: 2, maxlength: 25 },
     lastName: { type: String, required: true, minlength: 2, maxlength: 25 },
     email: { type: String, required: true, unique: true },
@@ -73,11 +74,37 @@ userSchema.methods.toJSON = function () {
         gender: restObj.gender,
         role: restObj.role,
         profilePicture: restObj.profilePicture,
+        coverImages: restObj.coverImages,
         createdAt: restObj.createdAt,
         updatedAt: restObj.updatedAt,
         confirmedAt: restObj.confirmedAt,
     };
 };
+userSchema.set("toObject", {
+    transform: (doc, ret) => {
+        console.log("inside toObject transform =========");
+        console.log({ doc, ret });
+        if (ret?.profilePicture?.subKey) {
+            ret.profilePicture.url = KeyUtil.generateS3UploadsUrlFromSubKey({
+                req: {
+                    host: process.env.HOST,
+                    protocol: process.env.PROTOCOL,
+                },
+                subKey: ret.profilePicture.subKey,
+            });
+            ret.profilePicture.subKey = undefined;
+        }
+        if (ret?.coverImages && ret.coverImages.length > 0) {
+            for (let i = 0; i < ret.coverImages.length; i++) {
+                ret.coverImages[i] = KeyUtil.generateS3UploadsUrlFromSubKey({
+                    req: { host: process.env.HOST, protocol: process.env.PROTOCOL },
+                    subKey: ret.coverImages[i],
+                });
+            }
+        }
+        return ret;
+    },
+});
 userSchema
     .virtual("fullName")
     .get(function () {
@@ -103,6 +130,5 @@ userSchema.post("init", async function () {
         this.phone = EncryptionSecurityUtil.decryptText({ cipherText: this.phone });
     }
 });
-const UserModel = mongoose.models.User ||
+export const UserModel = mongoose.models.User ||
     mongoose.model(ModelsNames.userModel, userSchema);
-export default UserModel;

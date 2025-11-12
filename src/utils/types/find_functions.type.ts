@@ -3,7 +3,10 @@ import type {
   Require_id,
   HydratedDocument,
   QueryOptions,
+  LeanOptions,
 } from "mongoose";
+
+export type LeanType = boolean | LeanOptions;
 
 export type FindFunctionOptionsType<TDocument, TLean> =
   QueryOptions<TDocument> & {
@@ -12,7 +15,7 @@ export type FindFunctionOptionsType<TDocument, TLean> =
 
 export type FindFunctionsReturnType<
   T,
-  Lean extends boolean
-> = Lean extends true
+  Lean extends LeanType
+> = Lean extends true | LeanOptions
   ? Require_id<FlattenMaps<T>> | null
   : HydratedDocument<T> | null;

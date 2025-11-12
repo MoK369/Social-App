@@ -1,4 +1,3 @@
-import type { Request } from "express";
 import { generateAlphaNumaricId } from "../security/id.security.ts";
 
 class KeyUtil {
@@ -38,10 +37,10 @@ class KeyUtil {
     req,
     subKey,
   }: {
-    req: Request;
+    req: { host: string; protocol: string };
     subKey: string;
   }): string => {
-    return `${req.protocol}://${req.get("host")}/uploads/${subKey}`;
+    return `${req.protocol}://${req.host}/uploads/${subKey}`;
   };
 }
 

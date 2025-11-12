@@ -6,9 +6,10 @@ import morgan from "morgan";
 import { MoodEnum } from "./utils/constants/enum.constants.js";
 import globalErrorHandler from "./utils/handlers/global.error.handler.js";
 import connectDB from "./db/db.connection.js";
-import UserModel from "./db/models/user.model.js";
+import { UserModel } from "./db/models/user.model.js";
 import modulesRouter from "./modules/module.routes.js";
 import uploadsRouter from "./uploads/uploads.route.js";
+import protocolAndHostHanlder from "./utils/handlers/protocol_host.handler.js";
 async function bootstrap() {
     const app = express();
     app.use(cors());
@@ -29,6 +30,7 @@ async function bootstrap() {
     }
     else {
         await UserModel.syncIndexes();
+        app.use(protocolAndHostHanlder);
         app.use(express.json());
         app.use(["/", "/api/v1"], modulesRouter);
         app.use("/uploads", uploadsRouter);

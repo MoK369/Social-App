@@ -1,4 +1,4 @@
-import type { FlattenMaps, Types } from "mongoose";
+import type { FlattenMaps } from "mongoose";
 import type { IUser } from "../../db/interfaces/user.interface.ts";
 
 export type ProfileResponseType = FlattenMaps<IUser>;
@@ -9,9 +9,7 @@ export interface IProfileImageResponse {
 
 export interface IProfileImageWithPresignedUrlResponse
   extends IProfileImageResponse {
-  user: FlattenMaps<
-    { profilePicture?: { url?: string } } & { _id: Types.ObjectId }
-  >;
+  profilePicture?: { url?: string };
 }
 
 export interface IProfileCoverImagesResponse {

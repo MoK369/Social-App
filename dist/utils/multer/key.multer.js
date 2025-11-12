@@ -14,7 +14,7 @@ class KeyUtil {
         })}${tag ? `_${tag}` : ""}_${originalname}`;
     };
     static generateS3UploadsUrlFromSubKey = ({ req, subKey, }) => {
-        return `${req.protocol}://${req.get("host")}/uploads/${subKey}`;
+        return `${req.protocol}://${req.host}/uploads/${subKey}`;
     };
 }
 export default KeyUtil;

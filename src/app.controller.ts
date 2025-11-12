@@ -7,9 +7,10 @@ import morgan from "morgan";
 import { MoodEnum } from "./utils/constants/enum.constants.ts";
 import globalErrorHandler from "./utils/handlers/global.error.handler.ts";
 import connectDB from "./db/db.connection.ts";
-import UserModel from "./db/models/user.model.ts";
+import {UserModel} from "./db/models/user.model.ts";
 import modulesRouter from "./modules/module.routes.ts";
 import uploadsRouter from "./uploads/uploads.route.ts";
+import protocolAndHostHanlder from "./utils/handlers/protocol_host.handler.ts";
 
 async function bootstrap(): Promise<void> {
   const app: Express = express();
@@ -37,6 +38,7 @@ async function bootstrap(): Promise<void> {
     });
   } else {
     await UserModel.syncIndexes();
+    app.use(protocolAndHostHanlder);
     app.use(express.json());
     app.use(["/", "/api/v1"], modulesRouter);
     app.use("/uploads", uploadsRouter);

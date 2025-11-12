@@ -1,4 +1,4 @@
-import UserModel from "../../db/models/user.model.js";
+import { UserModel, userSchema } from "../../db/models/user.model.js";
 import UserRepository from "../../db/repository/user.respository.js";
 import successHandler from "../../utils/handlers/success.handler.js";
 import RevokedTokenModel from "../../db/models/revoked_token.model.js";
@@ -11,11 +11,11 @@ import { EmailEventsEnum, EmailStatusEnum, OTPTypesEnum, S3EventsEnum, UserRoleE
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException, } from "../../utils/exceptions/custom.exceptions.js";
 import FriendRequestRepository from "../../db/repository/friend_request.repository.js";
 import FriendRequestModel from "../../db/models/friend_request.model.js";
-import mongoose from "mongoose";
 import OTP from "../../utils/security/otp.security.js";
 import { generateNumericId } from "../../utils/security/id.security.js";
 import Hashing from "../../utils/security/hash.security.js";
 import emailEvent from "../../utils/events/email.event.js";
+import mongoose, {} from "mongoose";
 class UserService {
     userRepository = new UserRepository(UserModel);
     revokedTokenRepository = new RevokedTokenRepository(RevokedTokenModel);
@@ -73,18 +73,10 @@ class UserService {
         });
     };
     profile = async (req, res) => {
-        const user = req.user.toJSON();
-        if (user.profilePicture?.subKey) {
-            user.profilePicture.url = KeyUtil.generateS3UploadsUrlFromSubKey({
-                req,
-                subKey: user.profilePicture.subKey || "",
-            });
-            user.profilePicture.subKey = undefined;
-        }
         return successHandler({
             res,
             message: "User Profile!",
-            body: user,
+            body: req.user,
         });
     };
     profileImage = async (req, res) => {
@@ -129,7 +121,13 @@ class UserService {
             options: {
                 new: true,
                 projection: { profilePicture: 1 },
-                lean: true,
+                lean: {
+                    transform: (doc, ret) => {
+                        const fn = userSchema.get("toObject").transform;
+                        if (typeof fn === "function")
+                            return fn(ret, doc, {});
+                    },
+                },
             },
         });
         if (!user) {
@@ -143,17 +141,10 @@ class UserService {
                 newSubKey: key,
             },
         });
-        if (user.profilePicture?.subKey) {
-            user.profilePicture.url = KeyUtil.generateS3UploadsUrlFromSubKey({
-                req,
-                subKey: user.profilePicture.subKey,
-            });
-            user.profilePicture.subKey = undefined;
-        }
         return successHandler({
             res,
             message: "Image Uploaded !",
-            body: { url, user },
+            body: { url, profilePicture: user?.profilePicture },
         });
     };
     profileCoverImages = async (req, res) => {
@@ -171,6 +162,13 @@ class UserService {
             },
             options: {
                 new: true,
+                lean: {
+                    transform: (doc, ret) => {
+                        const fn = userSchema.get("toObject").transform;
+                        if (typeof fn === "function")
+                            return fn(ret, doc, {});
+                    },
+                },
                 projection: { coverImages: 1 },
             },
         });
@@ -178,7 +176,7 @@ class UserService {
             res,
             message: "Cover Images Uploaded Successfully!",
             body: {
-                coverImages: user?.coverImages.map((subKey) => KeyUtil.generateS3UploadsUrlFromSubKey({ req, subKey })) || [],
+                coverImages: user?.coverImages || [],
             },
         });
     };

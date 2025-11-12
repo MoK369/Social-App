@@ -3,7 +3,7 @@ import CustomEvents from "./custom.event.js";
 import { S3EventsEnum } from "../constants/enum.constants.js";
 import S3Service from "../multer/s3.service.js";
 import UserRepository from "../../db/repository/user.respository.js";
-import UserModel from "../../db/models/user.model.js";
+import { UserModel } from "../../db/models/user.model.js";
 const s3Events = new CustomEvents(new EventEmitter());
 const userRepository = new UserRepository(UserModel);
 s3Events.subscribe({
