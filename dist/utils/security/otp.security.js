@@ -15,6 +15,9 @@ class OTP {
             case OTPTypesEnum.forgetPasswordOTP:
                 otpObject = user.resetPasswordOtp;
                 break;
+            case OTPTypesEnum.enableTwoFactor:
+            case OTPTypesEnum.loginWithTwoFactor:
+                otpObject = user.twoFactorOtp;
         }
         console.log({ otpObject });
         if (otpObject && otpObject.code) {

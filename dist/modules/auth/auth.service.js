@@ -117,6 +117,72 @@ class AuthenticationService {
         }))) {
             throw new NotFoundException("Invalid Login Credentials");
         }
+        if (user.twoFactorEnabledAt) {
+            const count = OTP.checkRequestOfNewOTP({
+                user,
+                otpType: OTPTypesEnum.loginWithTwoFactor,
+                checkEmailStatus: EmailStatusEnum.confirmed,
+            });
+            const otp = generateNumericId();
+            await this.userRepository.updateOne({
+                filter: { _id: user._id },
+                update: {
+                    twoFactorOtp: {
+                        expiresAt: Date.now() + 10 * 60 * 1000,
+                        code: await Hashing.generateHash({
+                            plainText: otp,
+                        }),
+                        count,
+                    },
+                },
+            });
+            emailEvent.publish({
+                eventName: EmailEventsEnum.loginWithTwoFactor,
+                payload: { otp, to: user.email },
+            });
+            return successHandler({ res, message: "2FA login OTP has been sent!" });
+        }
+        else {
+            const tokenCredentials = Token.getTokensBasedOnRole({ user });
+            return successHandler({
+                res,
+                message: "User logged in successfully",
+                body: {
+                    ...tokenCredentials,
+                    user,
+                },
+            });
+        }
+    };
+    loginTwoFactor = async (req, res) => {
+        const { email, otp } = req.body;
+        const user = await this.userRepository.findOne({
+            filter: { email, freezed: { $exists: false } },
+        });
+        if (!user) {
+            throw new NotFoundException("Invalid user account");
+        }
+        if (!user.twoFactorEnabledAt) {
+            throw new BadRequestException("2FA is not enabled!");
+        }
+        if (!user.twoFactorOtp || !user.twoFactorOtp.code) {
+            throw new BadRequestException("Login Credentials are not verified!");
+        }
+        if (Date.now() >= user.twoFactorOtp.expiresAt.getTime() ||
+            !(await Hashing.compareHash({
+                plainText: otp,
+                cipherText: user.twoFactorOtp.code,
+            }))) {
+            throw new BadRequestException("Invalid OTP or Has Expired!");
+        }
+        await this.userRepository.updateById({
+            id: user._id,
+            update: {
+                $unset: {
+                    twoFactorOtp: true,
+                },
+            },
+        });
         const tokenCredentials = Token.getTokensBasedOnRole({ user });
         return successHandler({
             res,

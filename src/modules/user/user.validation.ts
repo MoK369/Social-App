@@ -154,6 +154,28 @@ class UserValidators {
       }
     ),
   };
+
+  static sendFriendRequest = {
+    params: z.strictObject({
+      userId: generalValidationFields.objectId,
+    }),
+  };
+
+  static acceptFriendRequest = {
+    params: z.strictObject({
+      friendRequestId: generalValidationFields.objectId,
+    }),
+  };
+
+  static rejectFreindRequest = {
+    params: this.acceptFriendRequest.params.extend({}),
+  };
+
+  static confirmTwoFactor = {
+    body: z.strictObject({
+      otp: generalValidationFields.otp,
+    }),
+  };
 }
 
 export default UserValidators;

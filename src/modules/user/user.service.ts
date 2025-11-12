@@ -3,11 +3,15 @@ import UserModel from "../../db/models/user.model.ts";
 import UserRepository from "../../db/repository/user.respository.ts";
 import successHandler from "../../utils/handlers/success.handler.ts";
 import type {
+  AcceptFriendRequestParamsTypeDto,
+  ConfirmTwoFactorBodyTypeDto,
   DeleteAccountParamsTypeDto,
   FreezeAccountParamsTypeDto,
   LogoutBodyTypeDto,
   ProfileImageWithPresignedUrlBodyTypeDto,
+  RejectFriendRequestParamsTypeDto,
   RestoreAccountParamsTypeDto,
+  SendFreindRequestParamsTypeDto,
 } from "./user.dto.ts";
 import RevokedTokenModel from "../../db/models/revoked_token.model.ts";
 import RevokedTokenRepository from "../../db/repository/revoked_token.repository.ts";
@@ -16,26 +20,106 @@ import S3Service from "../../utils/multer/s3.service.ts";
 import KeyUtil from "../../utils/multer/key.multer.ts";
 import s3Events from "../../utils/events/s3.events.ts";
 import {
+  EmailEventsEnum,
+  EmailStatusEnum,
+  OTPTypesEnum,
   S3EventsEnum,
   UserRoleEnum,
 } from "../../utils/constants/enum.constants.ts";
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   NotFoundException,
 } from "../../utils/exceptions/custom.exceptions.ts";
 import type {
-  IProfileCoverImages,
-  IProfileImage,
-  IProfileImageWithPresignedUrl,
+  IProfileCoverImagesResponse,
+  IProfileImageResponse,
+  IProfileImageWithPresignedUrlResponse,
+  IRefreshTokenResponse,
   ProfileResponseType,
 } from "./user.entities.ts";
+import FriendRequestRepository from "../../db/repository/friend_request.repository.ts";
+import FriendRequestModel from "../../db/models/friend_request.model.ts";
+import mongoose from "mongoose";
+import OTP from "../../utils/security/otp.security.ts";
+import { generateNumericId } from "../../utils/security/id.security.ts";
+import Hashing from "../../utils/security/hash.security.ts";
+import emailEvent from "../../utils/events/email.event.ts";
 
 class UserService {
   protected userRepository = new UserRepository(UserModel);
   protected revokedTokenRepository = new RevokedTokenRepository(
     RevokedTokenModel
   );
+  protected friendRequestRepository = new FriendRequestRepository(
+    FriendRequestModel
+  );
+
+  enableTwoFactor = async (req: Request, res: Response): Promise<Response> => {
+    const count = OTP.checkRequestOfNewOTP({
+      user: req.user!,
+      otpType: OTPTypesEnum.enableTwoFactor,
+      checkEmailStatus: EmailStatusEnum.confirmed,
+    });
+
+    const otp = generateNumericId();
+
+    await this.userRepository.updateOne({
+      filter: { _id: req.user!._id! },
+      update: {
+        twoFactorOtp: {
+          expiresAt: Date.now() + 10 * 60 * 1000,
+          code: await Hashing.generateHash({
+            plainText: otp,
+          }),
+          count,
+        },
+      },
+    });
+
+    emailEvent.publish({
+      eventName: EmailEventsEnum.enableTwoFactor,
+      payload: { otp, to: req.user!.email },
+    });
+
+    return successHandler({ res, message: "Enable 2FA OTP has been sent!" });
+  };
+
+  confirmTwoFactor = async (req: Request, res: Response): Promise<Response> => {
+    const { otp } = req.body as ConfirmTwoFactorBodyTypeDto;
+
+    if (req.user!.twoFactorEnabledAt) {
+      throw new BadRequestException("2FA is already enabled");
+    }
+
+    if (!req.user!.twoFactorOtp || !req.user!.twoFactorOtp.code) {
+      throw new BadRequestException("Please request an OTP to enable 2FA");
+    }
+
+    if (
+      Date.now() >= req.user!.twoFactorOtp!.expiresAt.getTime() ||
+      !(await Hashing.compareHash({
+        plainText: otp,
+        cipherText: req.user!.twoFactorOtp!.code,
+      }))
+    ) {
+      throw new BadRequestException("Invalid OTP or Has Expired!");
+    }
+
+    await this.userRepository.updateById({
+      id: req.user!._id!,
+      update: {
+        twoFactorEnabledAt: new Date(),
+        $unset: { twoFactorOtp: true },
+      },
+    });
+
+    return successHandler({
+      res,
+      message: "2FA has been Enabled Successfully",
+    });
+  };
 
   profile = async (req: Request, res: Response): Promise<Response> => {
     const user = req.user!.toJSON();
@@ -72,7 +156,7 @@ class UserService {
       update: { profilePicture: { subKey: uploadSubKey } },
     });
 
-    return successHandler<IProfileImage>({
+    return successHandler<IProfileImageResponse>({
       res,
       message: "Image Uploaded !",
       body: {
@@ -131,7 +215,7 @@ class UserService {
       });
       user.profilePicture.subKey = undefined;
     }
-    return successHandler<IProfileImageWithPresignedUrl>({
+    return successHandler<IProfileImageWithPresignedUrlResponse>({
       res,
       message: "Image Uploaded !",
       body: { url, user },
@@ -162,7 +246,7 @@ class UserService {
       },
     });
 
-    return successHandler<IProfileCoverImages>({
+    return successHandler<IProfileCoverImagesResponse>({
       res,
       message: "Cover Images Uploaded Successfully!",
       body: {
@@ -275,12 +359,127 @@ class UserService {
       userId: req.user!._id!,
       tokenPayload: req.tokenPayload!,
     });
-    return successHandler({
+    return successHandler<IRefreshTokenResponse>({
       res,
       statusCode,
       message: "Got New Credentials",
       body: newTokens,
     });
+  };
+
+  sendFriendRequest = async (
+    req: Request,
+    res: Response
+  ): Promise<Response> => {
+    const { userId } = req.params as SendFreindRequestParamsTypeDto;
+
+    if (req.user!._id!.equals(userId)) {
+      throw new ConflictException("Can't send friend request to yourself");
+    }
+
+    const checkFriendRequestExists = await this.friendRequestRepository.findOne(
+      {
+        filter: {
+          createdBy: { $in: [req.user!._id!, userId] },
+          sentTo: { $in: [req.user!._id!, userId] },
+        },
+      }
+    );
+
+    if (checkFriendRequestExists) {
+      throw new ConflictException("Friend request already exists 🙂");
+    }
+
+    const user = await this.userRepository.findOne({
+      filter: {
+        _id: userId,
+        freezed: { $exists: false },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException("Invalid recipient 🚫");
+    }
+
+    await this.friendRequestRepository.create({
+      data: [
+        {
+          createdBy: req.user!._id!,
+          sentTo: new mongoose.Types.ObjectId(userId),
+        },
+      ],
+    });
+
+    return successHandler({
+      res,
+      statusCode: 201,
+      message: "Friend Request Sent Successfully 👍",
+    });
+  };
+
+  acceptFriendRequest = async (
+    req: Request,
+    res: Response
+  ): Promise<Response> => {
+    const { friendRequestId } = req.params as AcceptFriendRequestParamsTypeDto;
+
+    const friendRequest = await this.friendRequestRepository.findOneAndUpdate({
+      filter: {
+        _id: friendRequestId,
+        sentTo: req.user!._id!,
+        acceptedAt: { $exists: false },
+      },
+      update: {
+        acceptedAt: new Date(),
+      },
+    });
+
+    if (!friendRequest) {
+      throw new NotFoundException(
+        "Friend request doesn't exist or already accepted "
+      );
+    }
+
+    await Promise.all([
+      this.userRepository.updateById({
+        id: friendRequest.createdBy,
+        update: {
+          $addToSet: { friends: friendRequest.sentTo },
+        },
+      }),
+
+      this.userRepository.updateById({
+        id: friendRequest.sentTo,
+        update: {
+          $addToSet: { friends: friendRequest.createdBy },
+        },
+      }),
+    ]);
+
+    return successHandler({ res });
+  };
+
+  rejectFriendRequest = async (
+    req: Request,
+    res: Response
+  ): Promise<Response> => {
+    const { friendRequestId } = req.params as RejectFriendRequestParamsTypeDto;
+
+    const friendRequest = await this.friendRequestRepository.findOneAndDelete({
+      filter: {
+        _id: friendRequestId,
+        sentTo: req.user!._id!,
+        acceptedAt: { $exists: false },
+      },
+    });
+
+    if (!friendRequest) {
+      throw new NotFoundException(
+        "Failed to reject, friend request doesn't exist or already accepted"
+      );
+    }
+
+    return successHandler({ res });
   };
 }
 

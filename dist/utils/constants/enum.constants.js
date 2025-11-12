@@ -30,6 +30,8 @@ export var EmailEventsEnum;
 (function (EmailEventsEnum) {
     EmailEventsEnum["verifyEmail"] = "verifyEmail";
     EmailEventsEnum["resetPassword"] = "resetPassword";
+    EmailEventsEnum["enableTwoFactor"] = "enableTwoFactorAuth";
+    EmailEventsEnum["loginWithTwoFactor"] = "loginWithTwoFactor";
 })(EmailEventsEnum || (EmailEventsEnum = {}));
 export var S3EventsEnum;
 (function (S3EventsEnum) {
@@ -55,6 +57,8 @@ export var OTPTypesEnum;
 (function (OTPTypesEnum) {
     OTPTypesEnum["confirmEmailOTP"] = "ConfirmEmailOTP";
     OTPTypesEnum["forgetPasswordOTP"] = "ForgetPasswordOTP";
+    OTPTypesEnum["enableTwoFactor"] = "EnalbeTwoFactorAuth";
+    OTPTypesEnum["loginWithTwoFactor"] = "LoginWithTwoFactorAuth";
 })(OTPTypesEnum || (OTPTypesEnum = {}));
 export var EmailStatusEnum;
 (function (EmailStatusEnum) {

@@ -29,6 +29,8 @@ export enum ErrorCodesEnum {
 export enum EmailEventsEnum {
   verifyEmail = "verifyEmail",
   resetPassword = "resetPassword",
+  enableTwoFactor = "enableTwoFactorAuth",
+  loginWithTwoFactor = "loginWithTwoFactor",
 }
 
 export enum S3EventsEnum {
@@ -54,6 +56,8 @@ export enum LogoutStatusEnum {
 export enum OTPTypesEnum {
   confirmEmailOTP = "ConfirmEmailOTP",
   forgetPasswordOTP = "ForgetPasswordOTP",
+  enableTwoFactor = "EnalbeTwoFactorAuth",
+  loginWithTwoFactor = "LoginWithTwoFactorAuth",
 }
 
 export enum EmailStatusEnum {

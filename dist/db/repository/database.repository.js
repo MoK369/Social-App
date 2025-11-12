@@ -29,5 +29,8 @@ class DatabaseRepository {
     deleteOne = async ({ filter = {}, options = {}, }) => {
         return this.model.deleteOne(filter, options);
     };
+    findOneAndDelete = async ({ filter = {}, options = { new: true }, }) => {
+        return this.model.findOneAndDelete(filter, options);
+    };
 }
 export default DatabaseRepository;

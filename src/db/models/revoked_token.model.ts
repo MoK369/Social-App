@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import type { IRevokedToken } from "../interfaces/revoked_token.interface.ts";
+import ModelsNames from "../../utils/constants/models_names.constants.ts";
 
 const revokedTokenSchema = new mongoose.Schema<IRevokedToken>(
   {
@@ -14,7 +15,7 @@ const revokedTokenSchema = new mongoose.Schema<IRevokedToken>(
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: ModelsNames.userModel,
       required: true,
     },
   },
@@ -23,6 +24,9 @@ const revokedTokenSchema = new mongoose.Schema<IRevokedToken>(
 
 const RevokedTokenModel =
   mongoose.models.RevokedToken ||
-  mongoose.model<IRevokedToken>("RevokedToken", revokedTokenSchema);
+  mongoose.model<IRevokedToken>(
+    ModelsNames.revokedTokenModel,
+    revokedTokenSchema
+  );
 
 export default RevokedTokenModel;

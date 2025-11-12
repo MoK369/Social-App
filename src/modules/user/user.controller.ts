@@ -11,6 +11,40 @@ import userAuthorizationEndpoints from "./user.authorization.ts";
 const userRouter = Router();
 
 userRouter.get("/", Auths.authenticationMiddleware(), userService.profile);
+
+userRouter.post(
+  "/logout",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(UserValidators.logout),
+  userService.logout
+);
+
+userRouter.post(
+  "/refresh-token",
+  Auths.authenticationMiddleware({ tokenType: TokenTypesEnum.refresh }),
+  userService.refreshToken
+);
+
+userRouter.post(
+  "/:userId/send-friend-request",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(UserValidators.sendFriendRequest),
+  userService.sendFriendRequest
+);
+
+userRouter.post(
+  "/enable-2fa",
+  Auths.authenticationMiddleware(),
+  userService.enableTwoFactor
+);
+
+userRouter.post(
+  "/confirm-2fa",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(UserValidators.confirmTwoFactor),
+  userService.confirmTwoFactor
+);
+
 userRouter.patch(
   "/profile-image",
   Auths.authenticationMiddleware(),
@@ -43,24 +77,11 @@ userRouter.patch(
   userService.profileCoverImages
 );
 
-userRouter.post(
-  "/logout",
+userRouter.patch(
+  "/accept-friend-request/:friendRequestId",
   Auths.authenticationMiddleware(),
-  validationMiddleware(UserValidators.logout),
-  userService.logout
-);
-
-userRouter.post(
-  "/refresh-token",
-  Auths.authenticationMiddleware({ tokenType: TokenTypesEnum.refresh }),
-  userService.refreshToken
-);
-
-userRouter.delete(
-  "{/:userId}/freeze-account",
-  Auths.authenticationMiddleware(),
-  validationMiddleware(UserValidators.freezeAccount),
-  userService.freezeAccount
+  validationMiddleware(UserValidators.acceptFriendRequest),
+  userService.acceptFriendRequest
 );
 
 userRouter.patch(
@@ -68,6 +89,20 @@ userRouter.patch(
   Auths.combined({ accessRoles: userAuthorizationEndpoints.restoreAccount }),
   validationMiddleware(UserValidators.restoreAccount),
   userService.restoreAccount
+);
+
+userRouter.delete(
+  "/reject-friend-request/:friendRequestId",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(UserValidators.rejectFreindRequest),
+  userService.rejectFriendRequest
+);
+
+userRouter.delete(
+  "{/:userId}/freeze-account",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(UserValidators.freezeAccount),
+  userService.freezeAccount
 );
 
 userRouter.delete(

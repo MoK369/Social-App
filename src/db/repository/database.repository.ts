@@ -129,6 +129,19 @@ abstract class DatabaseRepository<TDocument> {
   }): Promise<DeleteResult> => {
     return this.model.deleteOne(filter, options);
   };
+
+  findOneAndDelete = async <TLean extends boolean = false>({
+    filter = {},
+    options = { new: true },
+  }: {
+    filter?: RootFilterQuery<TDocument>;
+    options?: FindFunctionOptionsType<TDocument, TLean>;
+  }): Promise<FindFunctionsReturnType<TDocument, TLean>> => {
+    return this.model.findOneAndDelete(
+      filter,
+      options
+    );
+  };
 }
 
 export default DatabaseRepository;

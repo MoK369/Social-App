@@ -16,3 +16,19 @@ export type RestoreAccountParamsTypeDto = z.infer<
 export type DeleteAccountParamsTypeDto = z.infer<
   typeof UserValidation.deleteAccount.params
 >;
+
+export type SendFreindRequestParamsTypeDto = z.infer<
+  typeof UserValidation.sendFriendRequest.params
+>;
+
+export type AcceptFriendRequestParamsTypeDto = z.infer<
+  typeof UserValidation.acceptFriendRequest.params
+>;
+
+export type RejectFriendRequestParamsTypeDto = z.infer<
+  typeof UserValidation.rejectFreindRequest.params
+>;
+
+export type ConfirmTwoFactorBodyTypeDto = z.infer<
+  typeof UserValidation.confirmTwoFactor.body
+>;

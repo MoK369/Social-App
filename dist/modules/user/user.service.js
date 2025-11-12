@@ -7,11 +7,71 @@ import Token from "../../utils/security/token.security.js";
 import S3Service from "../../utils/multer/s3.service.js";
 import KeyUtil from "../../utils/multer/key.multer.js";
 import s3Events from "../../utils/events/s3.events.js";
-import { S3EventsEnum, UserRoleEnum, } from "../../utils/constants/enum.constants.js";
-import { BadRequestException, ForbiddenException, NotFoundException, } from "../../utils/exceptions/custom.exceptions.js";
+import { EmailEventsEnum, EmailStatusEnum, OTPTypesEnum, S3EventsEnum, UserRoleEnum, } from "../../utils/constants/enum.constants.js";
+import { BadRequestException, ConflictException, ForbiddenException, NotFoundException, } from "../../utils/exceptions/custom.exceptions.js";
+import FriendRequestRepository from "../../db/repository/friend_request.repository.js";
+import FriendRequestModel from "../../db/models/friend_request.model.js";
+import mongoose from "mongoose";
+import OTP from "../../utils/security/otp.security.js";
+import { generateNumericId } from "../../utils/security/id.security.js";
+import Hashing from "../../utils/security/hash.security.js";
+import emailEvent from "../../utils/events/email.event.js";
 class UserService {
     userRepository = new UserRepository(UserModel);
     revokedTokenRepository = new RevokedTokenRepository(RevokedTokenModel);
+    friendRequestRepository = new FriendRequestRepository(FriendRequestModel);
+    enableTwoFactor = async (req, res) => {
+        const count = OTP.checkRequestOfNewOTP({
+            user: req.user,
+            otpType: OTPTypesEnum.enableTwoFactor,
+            checkEmailStatus: EmailStatusEnum.confirmed,
+        });
+        const otp = generateNumericId();
+        await this.userRepository.updateOne({
+            filter: { _id: req.user._id },
+            update: {
+                twoFactorOtp: {
+                    expiresAt: Date.now() + 10 * 60 * 1000,
+                    code: await Hashing.generateHash({
+                        plainText: otp,
+                    }),
+                    count,
+                },
+            },
+        });
+        emailEvent.publish({
+            eventName: EmailEventsEnum.enableTwoFactor,
+            payload: { otp, to: req.user.email },
+        });
+        return successHandler({ res, message: "Enable 2FA OTP has been sent!" });
+    };
+    confirmTwoFactor = async (req, res) => {
+        const { otp } = req.body;
+        if (req.user.twoFactorEnabledAt) {
+            throw new BadRequestException("2FA is already enabled");
+        }
+        if (!req.user.twoFactorOtp || !req.user.twoFactorOtp.code) {
+            throw new BadRequestException("Please request an OTP to enable 2FA");
+        }
+        if (Date.now() >= req.user.twoFactorOtp.expiresAt.getTime() ||
+            !(await Hashing.compareHash({
+                plainText: otp,
+                cipherText: req.user.twoFactorOtp.code,
+            }))) {
+            throw new BadRequestException("Invalid OTP or Has Expired!");
+        }
+        await this.userRepository.updateById({
+            id: req.user._id,
+            update: {
+                twoFactorEnabledAt: new Date(),
+                $unset: { twoFactorOtp: true },
+            },
+        });
+        return successHandler({
+            res,
+            message: "2FA has been Enabled Successfully",
+        });
+    };
     profile = async (req, res) => {
         const user = req.user.toJSON();
         if (user.profilePicture?.subKey) {
@@ -210,6 +270,88 @@ class UserService {
             message: "Got New Credentials",
             body: newTokens,
         });
+    };
+    sendFriendRequest = async (req, res) => {
+        const { userId } = req.params;
+        if (req.user._id.equals(userId)) {
+            throw new ConflictException("Can't send friend request to yourself");
+        }
+        const checkFriendRequestExists = await this.friendRequestRepository.findOne({
+            filter: {
+                createdBy: { $in: [req.user._id, userId] },
+                sentTo: { $in: [req.user._id, userId] },
+            },
+        });
+        if (checkFriendRequestExists) {
+            throw new ConflictException("Friend request already exists 🙂");
+        }
+        const user = await this.userRepository.findOne({
+            filter: {
+                _id: userId,
+                freezed: { $exists: false },
+            },
+        });
+        if (!user) {
+            throw new BadRequestException("Invalid recipient 🚫");
+        }
+        await this.friendRequestRepository.create({
+            data: [
+                {
+                    createdBy: req.user._id,
+                    sentTo: new mongoose.Types.ObjectId(userId),
+                },
+            ],
+        });
+        return successHandler({
+            res,
+            statusCode: 201,
+            message: "Friend Request Sent Successfully 👍",
+        });
+    };
+    acceptFriendRequest = async (req, res) => {
+        const { friendRequestId } = req.params;
+        const friendRequest = await this.friendRequestRepository.findOneAndUpdate({
+            filter: {
+                _id: friendRequestId,
+                sentTo: req.user._id,
+                acceptedAt: { $exists: false },
+            },
+            update: {
+                acceptedAt: new Date(),
+            },
+        });
+        if (!friendRequest) {
+            throw new NotFoundException("Friend request doesn't exist or already accepted ");
+        }
+        await Promise.all([
+            this.userRepository.updateById({
+                id: friendRequest.createdBy,
+                update: {
+                    $addToSet: { friends: friendRequest.sentTo },
+                },
+            }),
+            this.userRepository.updateById({
+                id: friendRequest.sentTo,
+                update: {
+                    $addToSet: { friends: friendRequest.createdBy },
+                },
+            }),
+        ]);
+        return successHandler({ res });
+    };
+    rejectFriendRequest = async (req, res) => {
+        const { friendRequestId } = req.params;
+        const friendRequest = await this.friendRequestRepository.findOneAndDelete({
+            filter: {
+                _id: friendRequestId,
+                sentTo: req.user._id,
+                acceptedAt: { $exists: false },
+            },
+        });
+        if (!friendRequest) {
+            throw new NotFoundException("Failed to reject, friend request doesn't exist or already accepted");
+        }
+        return successHandler({ res });
     };
 }
 export default new UserService();

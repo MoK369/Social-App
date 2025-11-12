@@ -27,6 +27,14 @@ export interface IUser {
   };
   resetPasswordVerificationExpiresAt?: Date;
   lastResetPasswordAt?: Date;
+
+  twoFactorEnabledAt?: Date;
+  twoFactorOtp?: {
+    code: string;
+    expiresAt: Date;
+    count?: number;
+  };
+
   changeCredentialsTime?: Date;
 
   phone: string;
@@ -53,6 +61,8 @@ export interface IUser {
     at: Date;
     by: Types.ObjectId;
   };
+
+  friends: Types.ObjectId[];
 }
 
 export type HIUser = HydratedDocument<IUser>;

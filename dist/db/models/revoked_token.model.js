@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import ModelsNames from "../../utils/constants/models_names.constants.js";
 const revokedTokenSchema = new mongoose.Schema({
     jti: {
         type: String,
@@ -11,10 +12,10 @@ const revokedTokenSchema = new mongoose.Schema({
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: ModelsNames.userModel,
         required: true,
     },
 }, { timestamps: true });
 const RevokedTokenModel = mongoose.models.RevokedToken ||
-    mongoose.model("RevokedToken", revokedTokenSchema);
+    mongoose.model(ModelsNames.revokedTokenModel, revokedTokenSchema);
 export default RevokedTokenModel;

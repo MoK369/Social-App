@@ -6,6 +6,7 @@ import {
 } from "../../utils/constants/enum.constants.ts";
 import EncryptionSecurityUtil from "../../utils/security/encryption.security.ts";
 import Hashing from "../../utils/security/hash.security.ts";
+import ModelsNames from "../../utils/constants/models_names.constants.ts";
 
 const userSchema = new mongoose.Schema<IUser>(
   {
@@ -28,6 +29,14 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     resetPasswordVerificationExpiresAt: { type: Date },
     lastResetPasswordAt: { type: Date },
+
+    twoFactorEnabledAt: Date,
+    twoFactorOtp: {
+      code: { type: String, required: true },
+      expiresAt: { type: Date, required: true },
+      count: { type: Number, default: 0 },
+    },
+
     changeCredentialsTime: { type: Date },
 
     phone: { type: String, required: true },
@@ -52,11 +61,16 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     freezed: {
       at: Date,
-      by: { type: mongoose.Types.ObjectId, ref: "User" },
+      by: { type: mongoose.Types.ObjectId, ref: ModelsNames.userModel },
     },
     restored: {
       at: Date,
-      by: { type: mongoose.Types.ObjectId, ref: "User" },
+      by: { type: mongoose.Types.ObjectId, ref: ModelsNames.userModel },
+    },
+
+    friends: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: ModelsNames.userModel,
     },
   },
   {
@@ -118,6 +132,6 @@ userSchema.post("init", async function () {
 
 const UserModel =
   (mongoose.models.User as Model<IUser>) ||
-  mongoose.model<IUser>("User", userSchema);
+  mongoose.model<IUser>(ModelsNames.userModel, userSchema);
 
 export default UserModel;

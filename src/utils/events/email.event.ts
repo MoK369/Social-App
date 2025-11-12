@@ -39,7 +39,45 @@ emailEvent.subscribe({
         html: HTML_EMAIL_TEMPLATE({
           title: subject,
           message:
-            "Thank you Using Our App ❤️, please use the otp below to verify Forget Password",
+            "Thank you for Using Our App ❤️, please use the otp below to verify Forget Password",
+          otpOrLink: payload.otp,
+        }),
+      },
+    });
+  },
+});
+
+emailEvent.subscribe({
+  eventName: EmailEventsEnum.enableTwoFactor,
+  backgroundFunction: async (payload) => {
+    const subject = "Enable 2FA";
+    await sendEmail({
+      data: {
+        subject,
+        to: payload.to,
+        html: HTML_EMAIL_TEMPLATE({
+          title: subject,
+          message:
+            "Thank you for Using Our App ❤️, please use the OTP below to Enable 2FA",
+          otpOrLink: payload.otp,
+        }),
+      },
+    });
+  },
+});
+
+emailEvent.subscribe({
+  eventName: EmailEventsEnum.loginWithTwoFactor,
+  backgroundFunction: async (payload) => {
+    const subject = "Login With 2FA";
+    await sendEmail({
+      data: {
+        subject,
+        to: payload.to,
+        html: HTML_EMAIL_TEMPLATE({
+          title: subject,
+          message:
+            "Thank you for Using Our App ❤️, please use the OTP below to Login Using 2FA",
           otpOrLink: payload.otp,
         }),
       },
