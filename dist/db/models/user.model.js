@@ -1,4 +1,4 @@
-import mongoose, { Model } from "mongoose";
+import mongoose, { Model, Types } from "mongoose";
 import { GenderEnum, UserRoleEnum, } from "../../utils/constants/enum.constants.js";
 import EncryptionSecurityUtil from "../../utils/security/encryption.security.js";
 import Hashing from "../../utils/security/hash.security.js";
@@ -65,10 +65,20 @@ export const userSchema = new mongoose.Schema({
     toObject: { virtuals: true },
 });
 userSchema.methods.toJSON = function () {
-    const { id, fullName, ...restObj } = this.toObject();
+    const { id, ...restObj } = this.toObject();
+    console.log({ friends: restObj.friends });
+    console.log({ type: typeof restObj.friends });
+    if (restObj.friends.length > 0 &&
+        !Types.ObjectId.isValid(restObj.friends[0])) {
+        for (const friend of restObj.friends) {
+            friend.fullName = `${friend.firstName} ${friend.lastName}`;
+            delete friend.firstName;
+            delete friend.lastName;
+        }
+    }
     return {
         id: this._id,
-        fullName,
+        fullName: `${restObj.firstName} ${restObj.lastName}`,
         email: restObj.email,
         phone: restObj.phone,
         gender: restObj.gender,
@@ -78,12 +88,11 @@ userSchema.methods.toJSON = function () {
         createdAt: restObj.createdAt,
         updatedAt: restObj.updatedAt,
         confirmedAt: restObj.confirmedAt,
+        friends: restObj.friends,
     };
 };
 userSchema.set("toObject", {
     transform: (doc, ret) => {
-        console.log("inside toObject transform =========");
-        console.log({ doc, ret });
         if (ret?.profilePicture?.subKey) {
             ret.profilePicture.url = KeyUtil.generateS3UploadsUrlFromSubKey({
                 req: {

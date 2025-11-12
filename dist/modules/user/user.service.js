@@ -73,10 +73,21 @@ class UserService {
         });
     };
     profile = async (req, res) => {
+        const user = await this.userRepository.findById({
+            id: req.user._id,
+            options: {
+                populate: [
+                    {
+                        path: "friends",
+                        select: "firstName lastName fullName email profilePicture",
+                    },
+                ],
+            },
+        });
         return successHandler({
             res,
             message: "User Profile!",
-            body: req.user,
+            body: user,
         });
     };
     profileImage = async (req, res) => {

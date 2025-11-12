@@ -45,6 +45,7 @@ uploadsRouter.get(
       throw new BadRequestException("Failed to fetch this asset ☹️");
     }
 
+    res.set("Cross-Origin-Resource-Policy", "cross-origin");
     res.setHeader(
       "Content-Type",
       s3Response.ContentType || "application/octet-stream"

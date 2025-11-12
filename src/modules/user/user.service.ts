@@ -124,10 +124,21 @@ class UserService {
   };
 
   profile = async (req: Request, res: Response): Promise<Response> => {
+    const user = await this.userRepository.findById({
+      id: req.user!._id!,
+      options: {
+        populate: [
+          {
+            path: "friends",
+            select: "firstName lastName fullName email profilePicture",
+          },
+        ],
+      },
+    });
     return successHandler<ProfileResponseType>({
       res,
       message: "User Profile!",
-      body: req.user!,
+      body: user!,
     });
   };
 
@@ -207,7 +218,6 @@ class UserService {
       },
     });
 
-    
     return successHandler<IProfileImageWithPresignedUrlResponse>({
       res,
       message: "Image Uploaded !",

@@ -27,6 +27,7 @@ uploadsRouter.get("/*path", async (req, res) => {
     if (!s3Response.Body) {
         throw new BadRequestException("Failed to fetch this asset ☹️");
     }
+    res.set("Cross-Origin-Resource-Policy", "cross-origin");
     res.setHeader("Content-Type", s3Response.ContentType || "application/octet-stream");
     if (download === "true") {
         res.setHeader("Content-Disposition", `attachment; filename="${downloadName
