@@ -22,19 +22,50 @@ export enum ErrorCodesEnum {
   CONFLICT_ERROR = "CONFLICT_ERROR",
   UNAUTHORIZED = "UNAUTHORIZED",
   FORBIDDEN = "FORBIDDEN",
+  TOO_MANY_RQUESTS = "TOO_MANY_REQUESTS",
+  ASSET_ERROR = "ASSET_ERROR",
 }
 
-export enum EventsEnum {
+export enum EmailEventsEnum {
   verifyEmail = "verifyEmail",
   resetPassword = "resetPassword",
+  enableTwoFactor = "enableTwoFactorAuth",
+  loginWithTwoFactor = "loginWithTwoFactor",
+}
+
+export enum S3EventsEnum {
+  trackProfileImageUpload = "trackProfileImageUpload",
+  trackCoverImageUpload = "trackCoverImageUpload",
 }
 
 export enum SignatureLevelsEnum {
-  Bearer = "Bearar",
+  Bearer = "Bearer",
   System = "System",
 }
 
 export enum TokenTypesEnum {
-  access = "access",
-  refresh = "refresh",
+  access = "Access",
+  refresh = "Refresh",
+}
+
+export enum LogoutStatusEnum {
+  one = "One",
+  all = "All",
+}
+
+export enum OTPTypesEnum {
+  confirmEmailOTP = "ConfirmEmailOTP",
+  forgetPasswordOTP = "ForgetPasswordOTP",
+  enableTwoFactor = "EnalbeTwoFactorAuth",
+  loginWithTwoFactor = "LoginWithTwoFactorAuth",
+}
+
+export enum EmailStatusEnum {
+  notConfirmed = "NotConfirmed",
+  confirmed = "Confirmed",
+}
+
+export enum StorageTypesEnum {
+  memory = "Memory",
+  disk = "Disk",
 }

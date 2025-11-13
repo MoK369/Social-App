@@ -1,18 +1,16 @@
-import type Mail from "nodemailer/lib/mailer/index.js";
-import { EventsEnum } from "../constants/enum.constants.ts";
+import { EmailEventsEnum } from "../constants/enum.constants.ts";
+import type { IEmailPayload } from "../constants/interface.constants.ts";
 import sendEmail from "../email/send.email.ts";
 import HTML_EMAIL_TEMPLATE from "../email/templates/html_email.template.ts";
 import CustomEvents from "./custom.event.ts";
 import { EventEmitter } from "node:events";
 
-interface IEmail extends Mail.Options {
-  otp: string;
-}
-
-const emailEvent = new CustomEvents<IEmail>(new EventEmitter());
+const emailEvent = new CustomEvents<EmailEventsEnum, IEmailPayload>(
+  new EventEmitter()
+);
 
 emailEvent.subscribe({
-  eventName: EventsEnum.verifyEmail,
+  eventName: EmailEventsEnum.verifyEmail,
   backgroundFunction: async (payload) => {
     const subject = "Email Verification";
     await sendEmail({
@@ -23,6 +21,63 @@ emailEvent.subscribe({
           title: subject,
           message:
             "Thank you for signing up ❤️, please use the otp below to verify your email",
+          otpOrLink: payload.otp,
+        }),
+      },
+    });
+  },
+});
+
+emailEvent.subscribe({
+  eventName: EmailEventsEnum.resetPassword,
+  backgroundFunction: async (payload) => {
+    const subject = "Forget Password";
+    await sendEmail({
+      data: {
+        subject,
+        to: payload.to,
+        html: HTML_EMAIL_TEMPLATE({
+          title: subject,
+          message:
+            "Thank you for Using Our App ❤️, please use the otp below to verify Forget Password",
+          otpOrLink: payload.otp,
+        }),
+      },
+    });
+  },
+});
+
+emailEvent.subscribe({
+  eventName: EmailEventsEnum.enableTwoFactor,
+  backgroundFunction: async (payload) => {
+    const subject = "Enable 2FA";
+    await sendEmail({
+      data: {
+        subject,
+        to: payload.to,
+        html: HTML_EMAIL_TEMPLATE({
+          title: subject,
+          message:
+            "Thank you for Using Our App ❤️, please use the OTP below to Enable 2FA",
+          otpOrLink: payload.otp,
+        }),
+      },
+    });
+  },
+});
+
+emailEvent.subscribe({
+  eventName: EmailEventsEnum.loginWithTwoFactor,
+  backgroundFunction: async (payload) => {
+    const subject = "Login With 2FA";
+    await sendEmail({
+      data: {
+        subject,
+        to: payload.to,
+        html: HTML_EMAIL_TEMPLATE({
+          title: subject,
+          message:
+            "Thank you for Using Our App ❤️, please use the OTP below to Login Using 2FA",
           otpOrLink: payload.otp,
         }),
       },

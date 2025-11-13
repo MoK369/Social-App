@@ -16,6 +16,13 @@ export class ApplicatonException extends Error {
         Error.captureStackTrace(this, this.constructor);
     }
 }
+export class ServerException extends ApplicatonException {
+    constructor(message, details, cause) {
+        super(ErrorCodesEnum.SERVER_ERROR, message, 500, details, cause);
+        this.name = this.constructor.name;
+        Error.captureStackTrace(this, this.constructor);
+    }
+}
 export class BadRequestException extends ApplicatonException {
     constructor(message, details, cause) {
         super(ErrorCodesEnum.INVALID_INPUT, message, 400, details, cause);
@@ -54,6 +61,21 @@ export class UnauthorizedException extends ApplicatonException {
 export class ForbiddenException extends ApplicatonException {
     constructor(message, details, cause) {
         super(ErrorCodesEnum.FORBIDDEN, message, 403, details, cause);
+        this.name = this.constructor.name;
+        Error.captureStackTrace(this, this.constructor);
+    }
+}
+export class TooManyRequestsException extends ApplicatonException {
+    constructor(message, details, cause) {
+        super(ErrorCodesEnum.TOO_MANY_RQUESTS, message, 429, details, cause);
+        this.name = this.constructor.name;
+        Error.captureStackTrace(this, this.constructor);
+    }
+}
+export class S3Exception extends ApplicatonException {
+    constructor(awsS3Error, message, details, cause) {
+        super(awsS3Error?.Code || ErrorCodesEnum.ASSET_ERROR, message +
+            (awsS3Error?.message ? ` (Exact Error: ${awsS3Error.message})` : ""), awsS3Error?.$metadata.httpStatusCode || 400, details, cause);
         this.name = this.constructor.name;
         Error.captureStackTrace(this, this.constructor);
     }

@@ -1,7 +1,6 @@
 import { EventEmitter } from "node:events";
-import type { EventsEnum } from "../constants/enum.constants.ts";
 
-class CustomEvents<T> {
+class CustomEvents<EventNameType extends string, PayloadType> {
   constructor(private emitter: EventEmitter) {}
 
   subscribe = ({
@@ -9,14 +8,12 @@ class CustomEvents<T> {
     onError,
     backgroundFunction,
   }: {
-    eventName: EventsEnum;
+    eventName: EventNameType;
     onError?: string;
-    backgroundFunction: (payload: T) => Promise<void>;
+    backgroundFunction: (payload: PayloadType) => Promise<void>;
   }) => {
     this.emitter.on(eventName, async (args) => {
       try {
-        console.log("inside subscribe custom event");
-        
         await backgroundFunction(args);
       } catch (e) {
         console.log(
@@ -30,8 +27,8 @@ class CustomEvents<T> {
     eventName,
     payload,
   }: {
-    eventName: EventsEnum;
-    payload: T;
+    eventName: EventNameType;
+    payload: PayloadType;
   }) => {
     this.emitter.emit(eventName, payload);
   };
