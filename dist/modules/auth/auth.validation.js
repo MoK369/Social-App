@@ -8,6 +8,12 @@ class AuthValidators {
             password: generalValidationFields.password,
         }),
     };
+    static loginTwoFactor = {
+        body: z.strictObject({
+            email: z.email(),
+            otp: generalValidationFields.otp,
+        }),
+    };
     static signup = {
         body: this.login.body
             .extend({

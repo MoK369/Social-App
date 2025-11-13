@@ -6,7 +6,7 @@ import {
 } from "../exceptions/custom.exceptions.ts";
 
 class OTP {
-  static checkRequestOfOTP = ({
+  static checkRequestOfNewOTP = ({
     user,
     otpType = OTPTypesEnum.confirmEmailOTP,
     checkEmailStatus = EmailStatusEnum.notConfirmed,
@@ -34,13 +34,13 @@ class OTP {
       case OTPTypesEnum.forgetPasswordOTP:
         otpObject = user!.resetPasswordOtp;
         break;
+      case OTPTypesEnum.enableTwoFactor:
+      case OTPTypesEnum.loginWithTwoFactor:
+        otpObject = user!.twoFactorOtp;
     }
-    console.log({otpObject});
-    
+    //console.log({ otpObject });
+
     if (otpObject && otpObject.code) {
-      console.log({
-        difference: Date.now() + 10 * 60 * 1000 - otpObject.expiresAt.getTime(),
-      });
       if (otpObject.count! >= 5) {
         if (
           Date.now() + 10 * 60 * 1000 - otpObject.expiresAt.getTime() >=

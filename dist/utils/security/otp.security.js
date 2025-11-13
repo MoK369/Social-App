@@ -1,7 +1,7 @@
 import { EmailStatusEnum, OTPTypesEnum } from "../constants/enum.constants.js";
 import { BadRequestException, TooManyRequestsException, } from "../exceptions/custom.exceptions.js";
 class OTP {
-    static checkRequestOfOTP = ({ user, otpType = OTPTypesEnum.confirmEmailOTP, checkEmailStatus = EmailStatusEnum.notConfirmed, }) => {
+    static checkRequestOfNewOTP = ({ user, otpType = OTPTypesEnum.confirmEmailOTP, checkEmailStatus = EmailStatusEnum.notConfirmed, }) => {
         if (!user || checkEmailStatus === EmailStatusEnum.notConfirmed
             ? user.confirmedAt
             : !user.confirmedAt) {
@@ -15,12 +15,11 @@ class OTP {
             case OTPTypesEnum.forgetPasswordOTP:
                 otpObject = user.resetPasswordOtp;
                 break;
+            case OTPTypesEnum.enableTwoFactor:
+            case OTPTypesEnum.loginWithTwoFactor:
+                otpObject = user.twoFactorOtp;
         }
-        console.log({ otpObject });
         if (otpObject && otpObject.code) {
-            console.log({
-                difference: Date.now() + 10 * 60 * 1000 - otpObject.expiresAt.getTime(),
-            });
             if (otpObject.count >= 5) {
                 if (Date.now() + 10 * 60 * 1000 - otpObject.expiresAt.getTime() >=
                     10 * 60 * 1000) {

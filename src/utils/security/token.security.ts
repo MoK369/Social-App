@@ -18,7 +18,7 @@ import {
   UnauthorizedException,
 } from "../exceptions/custom.exceptions.ts";
 import UserRepository from "../../db/repository/user.respository.ts";
-import UserModel from "../../db/models/user.model.ts";
+import {UserModel} from "../../db/models/user.model.ts";
 import type { ITokenPayload } from "../constants/interface.constants.ts";
 import { generateAlphaNumaricId } from "./id.security.ts";
 import RevokedTokenRepository from "../../db/repository/revoked_token.repository.ts";
@@ -158,7 +158,9 @@ class Token {
       throw new BadRequestException("Token as been Revoked!");
     }
 
-    const user = await this._userRepository.findById({ id: payload.id });
+    const user = await this._userRepository.findOne({
+      filter: { _id: payload.id, freezed: { $exists: false } },
+    });
     if (!user?.confirmedAt) {
       throw new BadRequestException("Invalid Account!");
     }

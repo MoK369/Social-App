@@ -12,6 +12,7 @@ class Auths {
             if (!result.success) {
                 throw new ValidationException("authorization field is required", result.error.issues.map((issue) => {
                     return {
+                        key: "headers",
                         path: issue.path.join("."),
                         message: issue.message,
                     };
@@ -23,7 +24,7 @@ class Auths {
             });
             req.user = user;
             req.tokenPayload = payload;
-            next();
+            return next();
         };
     };
     static authorizationMiddleware = ({ accessRoles = [], } = {}) => {
@@ -31,16 +32,14 @@ class Auths {
             if (!accessRoles.includes(req.user?.role ?? "")) {
                 throw new ForbiddenException("Not Authorized Account ⛔");
             }
-            next();
+            return next();
         };
     };
     static combined = ({ tokenType = TokenTypesEnum.access, accessRoles = [], }) => {
-        return async (req, res, next) => {
-            return [
-                this.authenticationMiddleware({ tokenType }),
-                this.authorizationMiddleware({ accessRoles }),
-            ];
-        };
+        return [
+            this.authenticationMiddleware({ tokenType }),
+            this.authorizationMiddleware({ accessRoles }),
+        ];
     };
 }
 export default Auths;

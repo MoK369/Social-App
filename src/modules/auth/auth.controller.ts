@@ -17,6 +17,12 @@ authRouter.post(
   authenticationService.login
 );
 
+authRouter.post(
+  "/login-2fa-otp",
+  validationMiddleware(AuthValidators.loginTwoFactor),
+  authenticationService.loginTwoFactor
+);
+
 authRouter.patch(
   "/confirm-email",
   validationMiddleware(AuthValidators.confirmEmail),

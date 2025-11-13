@@ -1,9 +1,17 @@
-import type { UpdateWriteOpResult } from "mongoose";
+import type {
+  FindFunctionOptionsType,
+  FindFunctionsReturnType,
+  LeanType,
+} from "../../utils/types/find_functions.type.ts";
+import type {
+  DeleteResult,
+  MongooseBaseQueryOptions,
+  UpdateWriteOpResult,
+} from "mongoose";
 import type {
   HydratedDocument,
   MongooseUpdateQueryOptions,
   ProjectionType,
-  QueryOptions,
   RootFilterQuery,
   Types,
   UpdateQuery,
@@ -12,30 +20,6 @@ import type { CreateOptions, Model } from "mongoose";
 
 abstract class DatabaseRepository<TDocument> {
   constructor(protected readonly model: Model<TDocument>) {}
-
-  findOne = async ({
-    filter,
-    projection,
-    options = {},
-  }: {
-    filter?: RootFilterQuery<TDocument>;
-    projection?: ProjectionType<TDocument>;
-    options?: QueryOptions<TDocument>;
-  }): Promise<HydratedDocument<TDocument> | null> => {
-    return this.model.findOne(filter, projection, options);
-  };
-
-  findById = async ({
-    id,
-    projection,
-    options = {},
-  }: {
-    id: Types.ObjectId | string;
-    projection?: ProjectionType<TDocument>;
-    options?: QueryOptions<TDocument>;
-  }): Promise<HydratedDocument<TDocument> | null> => {
-    return this.model.findById(id, projection, options);
-  };
 
   create = async ({
     data,
@@ -47,6 +31,30 @@ abstract class DatabaseRepository<TDocument> {
     options?: CreateOptions;
   }): Promise<HydratedDocument<TDocument>[]> => {
     return this.model.create(data, options);
+  };
+
+  findOne = async <TLean extends boolean = false>({
+    filter,
+    projection,
+    options = {},
+  }: {
+    filter?: RootFilterQuery<TDocument>;
+    projection?: ProjectionType<TDocument>;
+    options?: FindFunctionOptionsType<TDocument, TLean>;
+  }): Promise<FindFunctionsReturnType<TDocument, TLean>> => {
+    return this.model.findOne(filter, projection, options);
+  };
+
+  findById = async <TLean extends boolean = false>({
+    id,
+    projection,
+    options = {},
+  }: {
+    id: Types.ObjectId | string;
+    projection?: ProjectionType<TDocument>;
+    options?: FindFunctionOptionsType<TDocument, TLean>;
+  }): Promise<FindFunctionsReturnType<TDocument, TLean>> => {
+    return this.model.findById(id, projection, options);
   };
 
   updateOne = async ({
@@ -61,6 +69,77 @@ abstract class DatabaseRepository<TDocument> {
     return this.model.updateOne(
       filter,
       { ...update, $inc: { __v: 1 } },
+      options
+    );
+  };
+
+  updateById = async ({
+    id,
+    update,
+    options = {},
+  }: {
+    id: Types.ObjectId | string;
+    update: UpdateQuery<TDocument>;
+    options?: MongooseUpdateQueryOptions<TDocument>;
+  }): Promise<UpdateWriteOpResult> => {
+    return this.model.updateOne(
+      { _id: id },
+      { ...update, $inc: { __v: 1 } },
+      options
+    );
+  };
+
+  findOneAndUpdate = async <TLean extends boolean = false>({
+    filter = {},
+    update,
+    options = { new: true },
+  }: {
+    filter?: RootFilterQuery<TDocument>;
+    update: UpdateQuery<TDocument>;
+    options?: FindFunctionOptionsType<TDocument, TLean>;
+  }): Promise<FindFunctionsReturnType<TDocument, TLean>> => {
+    return this.model.findOneAndUpdate(
+      filter,
+      { ...update, $inc: { __v: 1 } },
+      options
+    );
+  };
+
+  findByIdAndUpdate = async <TLean extends LeanType = false>({
+    id,
+    update,
+    options = { new: true },
+  }: {
+    id: Types.ObjectId | string;
+    update: UpdateQuery<TDocument>;
+    options?: FindFunctionOptionsType<TDocument, TLean>;
+  }): Promise<FindFunctionsReturnType<TDocument, TLean>> => {
+    return this.model.findByIdAndUpdate(
+      id,
+      { ...update, $inc: { __v: 1 } },
+      options
+    );
+  };
+
+  deleteOne = async ({
+    filter = {},
+    options = {},
+  }: {
+    filter?: RootFilterQuery<TDocument>;
+    options?: MongooseBaseQueryOptions<TDocument>;
+  }): Promise<DeleteResult> => {
+    return this.model.deleteOne(filter, options);
+  };
+
+  findOneAndDelete = async <TLean extends boolean = false>({
+    filter = {},
+    options = { new: true },
+  }: {
+    filter?: RootFilterQuery<TDocument>;
+    options?: FindFunctionOptionsType<TDocument, TLean>;
+  }): Promise<FindFunctionsReturnType<TDocument, TLean>> => {
+    return this.model.findOneAndDelete(
+      filter,
       options
     );
   };

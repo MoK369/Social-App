@@ -19,6 +19,10 @@ export type VerifyForgetPasswordOtpBodyDtoType = z.infer<
   typeof authValidators.verifyForgetPasswordOtp.body
 >;
 
-export type resetForgotPasswordBodyDtoType = z.infer<
+export type ResetForgotPasswordBodyDtoType = z.infer<
   typeof authValidators.resetForgotPassword.body
+>;
+
+export type LoginTwoFactorBodyDtoType = z.infer<
+  typeof authValidators.loginTwoFactor.body
 >;

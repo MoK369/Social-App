@@ -26,18 +26,21 @@ const validationMiddleware = (schema: ZodSchemaType) => {
               ? issue.message
               : ".\n" + issue.message;
             return {
+              key,
               path: issue.path.join("."),
               message: issue.message,
             };
           })
         );
       } else {
-        req.validationResult = {
-          ...(req.validationResult || {}),
+        if (!req.validationResult) {
+          req.validationResult = {};
+        }
+        Object.assign(req.validationResult, {
           [key]: validationResult.data,
-        };
+        });
       }
-    }      
+    }
     if (validationError.message.length > 0) {
       throw new ValidationException(
         validationError.message,

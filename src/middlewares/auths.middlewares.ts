@@ -26,6 +26,7 @@ class Auths {
           "authorization field is required",
           result.error.issues.map((issue) => {
             return {
+              key: "headers",
               path: issue.path.join("."),
               message: issue.message,
             };
@@ -41,7 +42,7 @@ class Auths {
       req.user = user;
       req.tokenPayload = payload;
 
-      next();
+      return next();
     };
   };
 
@@ -54,7 +55,7 @@ class Auths {
       if (!accessRoles.includes(req.user?.role ?? ("" as UserRoleEnum))) {
         throw new ForbiddenException("Not Authorized Account ⛔");
       }
-      next();
+      return next();
     };
   };
 
@@ -65,12 +66,10 @@ class Auths {
     tokenType?: TokenTypesEnum;
     accessRoles?: UserRoleEnum[];
   }) => {
-    return async (req: Request, res: Response, next: NextFunction) => {
-      return [
-        this.authenticationMiddleware({ tokenType }),
-        this.authorizationMiddleware({ accessRoles }),
-      ];
-    };
+    return [
+      this.authenticationMiddleware({ tokenType }),
+      this.authorizationMiddleware({ accessRoles }),
+    ];
   };
 }
 

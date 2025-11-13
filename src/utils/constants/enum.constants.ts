@@ -23,11 +23,19 @@ export enum ErrorCodesEnum {
   UNAUTHORIZED = "UNAUTHORIZED",
   FORBIDDEN = "FORBIDDEN",
   TOO_MANY_RQUESTS = "TOO_MANY_REQUESTS",
+  ASSET_ERROR = "ASSET_ERROR",
 }
 
-export enum EventsEnum {
+export enum EmailEventsEnum {
   verifyEmail = "verifyEmail",
   resetPassword = "resetPassword",
+  enableTwoFactor = "enableTwoFactorAuth",
+  loginWithTwoFactor = "loginWithTwoFactor",
+}
+
+export enum S3EventsEnum {
+  trackProfileImageUpload = "trackProfileImageUpload",
+  trackCoverImageUpload = "trackCoverImageUpload",
 }
 
 export enum SignatureLevelsEnum {
@@ -48,6 +56,8 @@ export enum LogoutStatusEnum {
 export enum OTPTypesEnum {
   confirmEmailOTP = "ConfirmEmailOTP",
   forgetPasswordOTP = "ForgetPasswordOTP",
+  enableTwoFactor = "EnalbeTwoFactorAuth",
+  loginWithTwoFactor = "LoginWithTwoFactorAuth",
 }
 
 export enum EmailStatusEnum {

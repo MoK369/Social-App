@@ -27,15 +27,42 @@ export interface IUser {
   };
   resetPasswordVerificationExpiresAt?: Date;
   lastResetPasswordAt?: Date;
+
+  twoFactorEnabledAt?: Date;
+  twoFactorOtp?: {
+    code: string;
+    expiresAt: Date;
+    count?: number;
+  };
+
   changeCredentialsTime?: Date;
 
   phone: string;
+
+  profilePicture?: {
+    subKey: string | undefined;
+    url?: string;
+  };
+  tempProfilePicture?: {
+    subKey: string | undefined;
+  };
+  coverImages?: string[];
 
   gender: GenderEnum;
   role: UserRoleEnum;
 
   createdAt: Date;
   updatedAt: Date;
+  freezed?: {
+    at: Date;
+    by: Types.ObjectId;
+  };
+  restored?: {
+    at: Date;
+    by: Types.ObjectId;
+  };
+
+  friends: Types.ObjectId[];
 }
 
 export type HIUser = HydratedDocument<IUser>;

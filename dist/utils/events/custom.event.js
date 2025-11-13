@@ -7,7 +7,6 @@ class CustomEvents {
     subscribe = ({ eventName, onError, backgroundFunction, }) => {
         this.emitter.on(eventName, async (args) => {
             try {
-                console.log("inside subscribe custom event");
                 await backgroundFunction(args);
             }
             catch (e) {
