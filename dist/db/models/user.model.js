@@ -66,12 +66,13 @@ export const userSchema = new mongoose.Schema({
 });
 userSchema.methods.toJSON = function () {
     const { id, ...restObj } = this.toObject();
-    console.log({ friends: restObj.friends });
-    console.log({ type: typeof restObj.friends });
-    if (restObj.friends.length > 0 &&
+    if (restObj.friends &&
+        restObj.friends.length > 0 &&
         !Types.ObjectId.isValid(restObj.friends[0])) {
         for (const friend of restObj.friends) {
+            friend.id = friend._id;
             friend.fullName = `${friend.firstName} ${friend.lastName}`;
+            delete friend._id;
             delete friend.firstName;
             delete friend.lastName;
         }
@@ -126,7 +127,6 @@ userSchema
 userSchema.pre("save", async function () {
     if (this.isModified("password") &&
         !Hashing.isHashed({ text: this.password })) {
-        console.log("hashing the password");
         this.password = await Hashing.generateHash({ plainText: this.password });
     }
     if (this.isModified("phone") &&

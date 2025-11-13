@@ -138,10 +138,7 @@ class AuthenticationService {
   };
 
   login = async (req: Request, res: Response): Promise<Response> => {
-    const { email, password }: LoginBodyDtoType = req.body;
-
-    console.log({host: process.env.HOST, protocol: process.env.PROTOCOL});
-    
+    const { email, password }: LoginBodyDtoType = req.body;    
 
     const user: HIUser | null = await this.userRepository.findOne({
       filter: {

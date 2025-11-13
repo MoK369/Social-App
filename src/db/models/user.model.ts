@@ -1,4 +1,4 @@
-import mongoose, { Model, Types } from "mongoose";
+import mongoose, { Model, Types, type Require_id } from "mongoose";
 import type { IUser } from "../interfaces/user.interface.ts";
 import {
   GenderEnum,
@@ -83,15 +83,18 @@ export const userSchema = new mongoose.Schema<IUser>(
 
 userSchema.methods.toJSON = function () {
   const { id, ...restObj }: IUser = this.toObject();
-  console.log({ friends: restObj.friends });
-  console.log({ type: typeof restObj.friends });
 
   if (
+    restObj.friends &&
     restObj.friends.length > 0 &&
     !Types.ObjectId.isValid(restObj.friends[0]!)
   ) {
-    for (const friend of restObj.friends as unknown as Partial<IUser>[]) {
+    for (const friend of restObj.friends as unknown as Partial<
+      Require_id<IUser>
+    >[]) {
+      friend.id = friend._id!;
       friend.fullName = `${friend.firstName} ${friend.lastName}`;
+      delete friend._id;
       delete friend.firstName;
       delete friend.lastName;
     }
@@ -154,8 +157,6 @@ userSchema.pre("save", async function () {
     this.isModified("password") &&
     !Hashing.isHashed({ text: this.password })
   ) {
-    console.log("hashing the password");
-
     this.password = await Hashing.generateHash({ plainText: this.password });
   }
 

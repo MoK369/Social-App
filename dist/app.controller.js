@@ -10,16 +10,14 @@ import { UserModel } from "./db/models/user.model.js";
 import modulesRouter from "./modules/module.routes.js";
 import uploadsRouter from "./uploads/uploads.route.js";
 import protocolAndHostHanlder from "./utils/handlers/protocol_host.handler.js";
-import { Server, Socket } from "socket.io";
-import Token from "./utils/security/token.security.js";
-const connectedSockets = new Map();
+import { initializeIo } from "./modules/gateway/gateway.js";
 async function bootstrap() {
     const app = express();
     app.use(cors());
     app.use(helmet());
     app.use(rateLimit({
         windowMs: 15 * 60 * 1000,
-        max: 200,
+        max: 500,
         message: { error: "Too many requests, please try again later." },
     }));
     app.use(morgan(process.env.MOOD === MoodEnum.DEVELOPMENT ? "dev" : "combined"));
@@ -47,34 +45,6 @@ async function bootstrap() {
     const httpServer = app.listen(process.env.PORT, () => {
         console.log(`Server is running on port ${process.env.PORT} 🚀`);
     });
-    const io = new Server(httpServer, {
-        cors: {
-            origin: "*",
-        },
-    });
-    io.use(async (socket, next) => {
-        try {
-            const { user } = await Token.decode({
-                authorization: socket.handshake.auth.authorization,
-            });
-            connectedSockets.set(user._id.toString(), socket.id);
-            next();
-        }
-        catch (error) {
-            next(error);
-        }
-    });
-    io.on("connection", (socket) => {
-        socket.emit("connection_id", socket.id);
-        console.log("Public Channel:: ", { socketId: socket.id });
-        console.log({ connectedSockets });
-        socket.emit("productStock", {
-            productId: "2319827391",
-            quantity: 10,
-        });
-        socket.on("disconnect", () => {
-            console.log(`Logout from :: ${socket.id}`);
-        });
-    });
+    initializeIo(httpServer);
 }
 export default bootstrap;

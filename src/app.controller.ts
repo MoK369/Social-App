@@ -11,10 +11,7 @@ import { UserModel } from "./db/models/user.model.ts";
 import modulesRouter from "./modules/module.routes.ts";
 import uploadsRouter from "./uploads/uploads.route.ts";
 import protocolAndHostHanlder from "./utils/handlers/protocol_host.handler.ts";
-import { Server, Socket } from "socket.io";
-import Token from "./utils/security/token.security.ts";
-
-const connectedSockets = new Map<string, string>();
+import { initializeIo } from "./modules/gateway/gateway.ts";
 
 async function bootstrap(): Promise<void> {
   const app: Express = express();
@@ -24,7 +21,7 @@ async function bootstrap(): Promise<void> {
   app.use(
     rateLimit({
       windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 200, // limit each IP to 200 requests per windowMs
+      max: 500, // limit each IP to 200 requests per windowMs
       message: { error: "Too many requests, please try again later." },
     })
   );
@@ -58,54 +55,7 @@ async function bootstrap(): Promise<void> {
   const httpServer = app.listen(process.env.PORT, () => {
     console.log(`Server is running on port ${process.env.PORT} 🚀`);
   });
-
-  const io = new Server(httpServer, {
-    cors: {
-      origin: "*",
-    },
-  });
-  io.use(async (socket: Socket, next) => {
-    try {
-      const { user } = await Token.decode({
-        authorization: socket.handshake.auth.authorization,
-      });
-      connectedSockets.set(user._id.toString(), socket.id);
-      next();
-    } catch (error: any) {
-      next(error);
-    }
-  });
-
-  // http://localhost:3001/
-  io.on("connection", (socket: Socket) => {
-    socket.emit("connection_id", socket.id);
-
-    console.log("Public Channel:: ", { socketId: socket.id });
-    console.log({ connectedSockets });
-
-    // socket.on("sayHi", (data, callback) => {
-    //   console.log({ data });
-    //   callback("Welcome front-end");
-    // });
-
-    socket.emit("productStock", {
-      productId: "2319827391",
-      quantity: 10,
-    });
-
-    socket.on("disconnect", () => {
-      console.log(`Logout from :: ${socket.id}`);
-    });
-  });
-
-  // http://localhost:3001/admin
-  // io.of("admin").on("connection", (socket: Socket) => {
-  //   console.log("Admin Channel:: ",{ socketId: socket.id });
-
-  //   socket.on("disconnect", () => {
-  //     console.log(`Logout from :: ${socket.id}`);
-  //   });
-  // });
+  initializeIo(httpServer);
 }
 
 export default bootstrap;

@@ -38,7 +38,7 @@ class OTP {
       case OTPTypesEnum.loginWithTwoFactor:
         otpObject = user!.twoFactorOtp;
     }
-    console.log({ otpObject });
+    //console.log({ otpObject });
 
     if (otpObject && otpObject.code) {
       if (otpObject.count! >= 5) {

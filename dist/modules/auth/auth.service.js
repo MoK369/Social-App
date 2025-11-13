@@ -99,7 +99,6 @@ class AuthenticationService {
     };
     login = async (req, res) => {
         const { email, password } = req.body;
-        console.log({ host: process.env.HOST, protocol: process.env.PROTOCOL });
         const user = await this.userRepository.findOne({
             filter: {
                 email,

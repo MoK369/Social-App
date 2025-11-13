@@ -19,7 +19,6 @@ class OTP {
             case OTPTypesEnum.loginWithTwoFactor:
                 otpObject = user.twoFactorOtp;
         }
-        console.log({ otpObject });
         if (otpObject && otpObject.code) {
             if (otpObject.count >= 5) {
                 if (Date.now() + 10 * 60 * 1000 - otpObject.expiresAt.getTime() >=
