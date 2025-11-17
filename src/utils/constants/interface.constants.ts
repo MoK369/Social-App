@@ -5,7 +5,8 @@ import type { Socket } from "socket.io";
 import type { HIUser } from "../../db/interfaces/user.interface.ts";
 
 export interface IEmailPayload extends Mail.Options {
-  otp: string;
+  otp?: string;
+  taggingUser?: string;
 }
 
 export interface IS3UploadPayload {
@@ -25,4 +26,3 @@ export interface IAuthSocket extends Socket {
     payload: JwtPayload;
   };
 }
-

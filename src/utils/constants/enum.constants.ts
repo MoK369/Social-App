@@ -31,6 +31,7 @@ export enum EmailEventsEnum {
   resetPassword = "resetPassword",
   enableTwoFactor = "enableTwoFactorAuth",
   loginWithTwoFactor = "loginWithTwoFactor",
+  tagNotifyingEmail = "tagNotifyingEmail",
 }
 
 export enum S3EventsEnum {
@@ -79,4 +80,9 @@ export enum AvailabilityEnum {
   public = "Public",
   friends = "Friends",
   onlyMe = "OnlyMe",
+}
+
+export enum LikeActionsEnum {
+  like = "Like",
+  unlike = "Unlike",
 }

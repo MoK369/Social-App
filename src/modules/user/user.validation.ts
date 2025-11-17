@@ -1,5 +1,8 @@
 import z from "zod";
-import { LogoutStatusEnum } from "../../utils/constants/enum.constants.ts";
+import {
+  LogoutStatusEnum,
+  StorageTypesEnum,
+} from "../../utils/constants/enum.constants.ts";
 import generalValidationFields from "../../utils/constants/validation.constants.ts";
 import fileValidation from "../../utils/multer/file_validation.multer.ts";
 
@@ -19,66 +22,20 @@ class UserValidators {
   };
 
   static profileImage = {
-    file: z
-      .strictObject(
-        {
-          fieldname: generalValidationFields.fileKeys.fieldname,
-          originalname: generalValidationFields.fileKeys.originalname,
-          encoding: generalValidationFields.fileKeys.encoding,
-          mimetype: generalValidationFields.fileKeys.mimetype,
-          buffer: generalValidationFields.fileKeys.buffer,
-          size: generalValidationFields.fileKeys.size.max(1024 * 1024), // 1MB
-        },
-        { error: "image is missing" }
-      )
-      .superRefine((data, ctx) => {
-        if (data.fieldname !== "image") {
-          ctx.addIssue({
-            code: "custom",
-            path: ["image"],
-            message: "image field is required",
-          });
-        }
-        if (!fileValidation.image.includes(data.mimetype)) {
-          ctx.addIssue({
-            code: "custom",
-            path: ["image"],
-            message: "Invalid Image Type!",
-          });
-        }
-      }),
+    file: generalValidationFields.fileKeys({
+      storageApproach: StorageTypesEnum.memory,
+      fieldName: "image",
+      maxSize: 1024 * 1024,
+      mimetype: fileValidation.image,
+    }),
   };
   static profileImageDisk = {
-    file: z
-      .strictObject(
-        {
-          fieldname: generalValidationFields.fileKeys.fieldname,
-          originalname: generalValidationFields.fileKeys.originalname,
-          encoding: generalValidationFields.fileKeys.encoding,
-          mimetype: generalValidationFields.fileKeys.mimetype,
-          destination: generalValidationFields.fileKeys.destination,
-          filename: generalValidationFields.fileKeys.fieldname,
-          path: generalValidationFields.fileKeys.path,
-          size: generalValidationFields.fileKeys.size.max(5 * 1024 * 1024), // 5MB
-        },
-        { error: "image is missing" }
-      )
-      .superRefine((data, ctx) => {
-        if (data.fieldname !== "image") {
-          ctx.addIssue({
-            code: "custom",
-            path: ["image"],
-            message: "image field is required",
-          });
-        }
-        if (!fileValidation.image.includes(data.mimetype)) {
-          ctx.addIssue({
-            code: "custom",
-            path: ["image"],
-            message: "Invalid Image Type!",
-          });
-        }
-      }),
+    file: generalValidationFields.fileKeys({
+      storageApproach: StorageTypesEnum.disk,
+      fieldName: "image",
+      maxSize: 5 * 1024 * 1024,
+      mimetype: fileValidation.image,
+    }),
   };
 
   static profileImageWithPresignedUrl = {
@@ -91,34 +48,12 @@ class UserValidators {
   static profileCoverImages = {
     files: z
       .array(
-        z
-          .strictObject(
-            {
-              fieldname: generalValidationFields.fileKeys.fieldname,
-              originalname: generalValidationFields.fileKeys.originalname,
-              encoding: generalValidationFields.fileKeys.encoding,
-              mimetype: generalValidationFields.fileKeys.mimetype,
-              buffer: generalValidationFields.fileKeys.buffer,
-              size: generalValidationFields.fileKeys.size.max(1024 * 1024), // 1MB
-            },
-            { error: "image is missing" }
-          )
-          .superRefine((data, ctx) => {
-            if (data.fieldname !== "images") {
-              ctx.addIssue({
-                code: "custom",
-                path: ["images"],
-                message: "image field is required",
-              });
-            }
-            if (!fileValidation.image.includes(data.mimetype)) {
-              ctx.addIssue({
-                code: "custom",
-                path: ["images"],
-                message: "Invalid Image Type!",
-              });
-            }
-          }),
+        generalValidationFields.fileKeys({
+          storageApproach: StorageTypesEnum.memory,
+          fieldName: "images",
+          maxSize: 1024 * 1024,
+          mimetype: fileValidation.image,
+        }),
         { error: "Cover images are required" }
       )
       .min(1, "At least 1 cover image should be uploaded")

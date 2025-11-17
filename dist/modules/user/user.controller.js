@@ -7,7 +7,7 @@ import { TokenTypesEnum } from "../../utils/constants/enum.constants.js";
 import CloudMulter from "../../utils/multer/cloud.multer.js";
 import fileValidation from "../../utils/multer/file_validation.multer.js";
 import userAuthorizationEndpoints from "./user.authorization.js";
-import chatRouter from "../chat/chat.controller.js";
+import chatRouter from "../chat/index.js";
 const userRouter = Router();
 userRouter.use("/:userId/chat", chatRouter);
 userRouter.get("/", Auths.authenticationMiddleware(), userService.profile);
@@ -22,7 +22,7 @@ userRouter.patch("/profile-image", Auths.authenticationMiddleware(), CloudMulter
     maxFileSize: 1024 * 1024,
 }), validationMiddleware(UserValidators.profileImage), userService.profileImage);
 userRouter.patch("/profile-image-presigned-url", Auths.authenticationMiddleware(), validationMiddleware(UserValidators.profileImageWithPresignedUrl), userService.profileImageWithPresignedUrl);
-userRouter.patch("/profile-cover-images", Auths.authenticationMiddleware(), CloudMulter.handleMultiFilesUpload({
+userRouter.patch("/profile-cover-images", Auths.authenticationMiddleware(), CloudMulter.handleArrayFilesUpload({
     fieldName: "images",
     validation: fileValidation.image,
     maxCount: 2,

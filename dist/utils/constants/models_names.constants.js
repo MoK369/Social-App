@@ -3,5 +3,6 @@ class ModelsNames {
     static revokedTokenModel = "RevokedToken";
     static friendRequestModel = "FriendRequest";
     static chatModel = "Chat";
+    static postModel = "Post";
 }
 export default ModelsNames;

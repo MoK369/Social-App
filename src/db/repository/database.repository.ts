@@ -6,6 +6,7 @@ import type {
 import type {
   DeleteResult,
   MongooseBaseQueryOptions,
+  UpdateWithAggregationPipeline,
   UpdateWriteOpResult,
 } from "mongoose";
 import type {
@@ -17,6 +18,10 @@ import type {
   UpdateQuery,
 } from "mongoose";
 import type { CreateOptions, Model } from "mongoose";
+import type {
+  UpdateFunctionsUpdateObjectType,
+  UpdateType,
+} from "../../utils/types/update_functions.type.ts";
 
 abstract class DatabaseRepository<TDocument> {
   constructor(protected readonly model: Model<TDocument>) {}
@@ -31,6 +36,18 @@ abstract class DatabaseRepository<TDocument> {
     options?: CreateOptions;
   }): Promise<HydratedDocument<TDocument>[]> => {
     return this.model.create(data, options);
+  };
+
+  find = async <TLean extends boolean = false>({
+    filter,
+    projection,
+    options = {},
+  }: {
+    filter: RootFilterQuery<TDocument>;
+    projection?: ProjectionType<TDocument>;
+    options?: FindFunctionOptionsType<TDocument, TLean>;
+  }): Promise<FindFunctionsReturnType<TDocument, TLean>[]> => {
+    return this.model.find(filter, projection, options);
   };
 
   findOne = async <TLean extends boolean = false>({
@@ -63,7 +80,7 @@ abstract class DatabaseRepository<TDocument> {
     options = {},
   }: {
     filter?: RootFilterQuery<TDocument>;
-    update: UpdateQuery<TDocument>;
+    update: UpdateQuery<TDocument> | UpdateWithAggregationPipeline;
     options?: MongooseUpdateQueryOptions<TDocument>;
   }): Promise<UpdateWriteOpResult> => {
     return this.model.updateOne(
@@ -73,20 +90,27 @@ abstract class DatabaseRepository<TDocument> {
     );
   };
 
-  updateById = async ({
+  updateById = async <TUpdate extends UpdateType>({
     id,
     update,
     options = {},
   }: {
     id: Types.ObjectId | string;
-    update: UpdateQuery<TDocument>;
+    update: UpdateFunctionsUpdateObjectType<TDocument, TUpdate>;
     options?: MongooseUpdateQueryOptions<TDocument>;
   }): Promise<UpdateWriteOpResult> => {
-    return this.model.updateOne(
-      { _id: id },
-      { ...update, $inc: { __v: 1 } },
-      options
-    );
+    let toUpdateObject;
+    if (Array.isArray(update)) {
+      update.push({
+        $set: {
+          __v: { $add: ["$__v", 1] },
+        },
+      });
+      toUpdateObject = update;
+    } else {
+      toUpdateObject = { ...update, $inc: { __v: 1 } };
+    }
+    return this.model.updateOne({ _id: id }, toUpdateObject, options);
   };
 
   findOneAndUpdate = async <TLean extends boolean = false>({
@@ -138,10 +162,7 @@ abstract class DatabaseRepository<TDocument> {
     filter?: RootFilterQuery<TDocument>;
     options?: FindFunctionOptionsType<TDocument, TLean>;
   }): Promise<FindFunctionsReturnType<TDocument, TLean>> => {
-    return this.model.findOneAndDelete(
-      filter,
-      options
-    );
+    return this.model.findOneAndDelete(filter, options);
   };
 }
 

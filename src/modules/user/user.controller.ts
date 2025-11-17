@@ -70,7 +70,7 @@ userRouter.patch(
 userRouter.patch(
   "/profile-cover-images",
   Auths.authenticationMiddleware(),
-  CloudMulter.handleMultiFilesUpload({
+  CloudMulter.handleArrayFilesUpload({
     fieldName: "images",
     validation: fileValidation.image,
     maxCount: 2,

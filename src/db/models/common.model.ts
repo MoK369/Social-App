@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
-import type { IAtByObject } from "../interfaces/common.interface.ts";
+import type {
+  IAtByObject,
+  ICodExpireCoundObject,
+} from "../interfaces/common.interface.ts";
 import ModelsNames from "../../utils/constants/models_names.constants.ts";
 
 export const atByObjectSchema = new mongoose.Schema<IAtByObject>(
@@ -13,3 +16,13 @@ export const atByObjectSchema = new mongoose.Schema<IAtByObject>(
   },
   { _id: false }
 );
+
+export const codeExpireCountObjectSchema =
+  new mongoose.Schema<ICodExpireCoundObject>(
+    {
+      code: { type: String, required: true },
+      expiresAt: { type: Date, require: true },
+      count: { type: Number, default: 0 },
+    },
+    { _id: false }
+  );

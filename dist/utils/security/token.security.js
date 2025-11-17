@@ -84,7 +84,7 @@ class Token {
             throw new BadRequestException("Token as been Revoked!");
         }
         const user = await this._userRepository.findOne({
-            filter: { _id: payload.id, freezed: { $exists: false } },
+            filter: { _id: payload.id },
         });
         if (!user?.confirmedAt) {
             throw new BadRequestException("Invalid Account!");

@@ -1,9 +1,7 @@
 import { asyncSocketIoServiceHandler } from "../../utils/handlers/async.handler.js";
 import successHandler from "../../utils/handlers/success.handler.js";
-import ChatRespository from "../../db/repository/chat.repository.js";
-import ChatModel from "../../db/models/chat.model.js";
-import UserRepository from "../../db/repository/user.respository.js";
-import { UserModel } from "../../db/models/user.model.js";
+import { UserRepository, ChatRespository } from "../../db/repository/index.js";
+import { UserModel, ChatModel } from "../../db/models/index.js";
 import { Types } from "mongoose";
 import { NotFoundException } from "../../utils/exceptions/custom.exceptions.js";
 import { connectedSockets } from "../gateway/gateway.js";

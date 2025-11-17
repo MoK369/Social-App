@@ -1,16 +1,12 @@
-import { UserModel, userSchema } from "../../db/models/user.model.js";
-import UserRepository from "../../db/repository/user.respository.js";
+import { UserModel, userSchema, RevokedTokenModel, FriendRequestModel } from "../../db/models/index.js";
+import { UserRepository, FriendRequestRepository, RevokedTokenRepository, } from "../../db/repository/index.js";
 import successHandler from "../../utils/handlers/success.handler.js";
-import RevokedTokenModel from "../../db/models/revoked_token.model.js";
-import RevokedTokenRepository from "../../db/repository/revoked_token.repository.js";
 import Token from "../../utils/security/token.security.js";
 import S3Service from "../../utils/multer/s3.service.js";
 import KeyUtil from "../../utils/multer/key.multer.js";
 import s3Events from "../../utils/events/s3.events.js";
 import { EmailEventsEnum, EmailStatusEnum, OTPTypesEnum, S3EventsEnum, UserRoleEnum, } from "../../utils/constants/enum.constants.js";
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException, } from "../../utils/exceptions/custom.exceptions.js";
-import FriendRequestRepository from "../../db/repository/friend_request.repository.js";
-import FriendRequestModel from "../../db/models/friend_request.model.js";
 import OTP from "../../utils/security/otp.security.js";
 import { generateNumericId } from "../../utils/security/id.security.js";
 import Hashing from "../../utils/security/hash.security.js";

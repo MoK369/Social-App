@@ -10,7 +10,7 @@ import type {
   VerifyForgetPasswordOtpBodyDtoType,
 } from "./auth.dto.ts";
 import {UserRepository} from "../../db/repository/index.ts";
-import { UserModel } from "../../db/models/user.model.ts";
+import { UserModel } from "../../db/models/index.ts";
 import {
   BadRequestException,
   ConflictException,

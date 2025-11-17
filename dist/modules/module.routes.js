@@ -1,6 +1,7 @@
 import { Router } from "express";
-import authRouter from "./auth/auth.controller.js";
-import userRouter from "./user/user.controller.js";
+import { authRouter } from "./auth/index.js";
+import { userRouter } from "./user/index.js";
+import { postRouter } from "./post/index.js";
 const modulesRouter = Router();
 modulesRouter.get("/", (req, res) => {
     res.json({
@@ -9,4 +10,5 @@ modulesRouter.get("/", (req, res) => {
 });
 modulesRouter.use("/auth", authRouter);
 modulesRouter.use("/user", userRouter);
+modulesRouter.use("/post", postRouter);
 export default modulesRouter;

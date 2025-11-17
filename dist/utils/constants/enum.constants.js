@@ -32,6 +32,7 @@ export var EmailEventsEnum;
     EmailEventsEnum["resetPassword"] = "resetPassword";
     EmailEventsEnum["enableTwoFactor"] = "enableTwoFactorAuth";
     EmailEventsEnum["loginWithTwoFactor"] = "loginWithTwoFactor";
+    EmailEventsEnum["tagNotifyingEmail"] = "tagNotifyingEmail";
 })(EmailEventsEnum || (EmailEventsEnum = {}));
 export var S3EventsEnum;
 (function (S3EventsEnum) {
@@ -70,3 +71,19 @@ export var StorageTypesEnum;
     StorageTypesEnum["memory"] = "Memory";
     StorageTypesEnum["disk"] = "Disk";
 })(StorageTypesEnum || (StorageTypesEnum = {}));
+export var AllowCommentsEnum;
+(function (AllowCommentsEnum) {
+    AllowCommentsEnum["allow"] = "Allow";
+    AllowCommentsEnum["deny"] = "Deny";
+})(AllowCommentsEnum || (AllowCommentsEnum = {}));
+export var AvailabilityEnum;
+(function (AvailabilityEnum) {
+    AvailabilityEnum["public"] = "Public";
+    AvailabilityEnum["friends"] = "Friends";
+    AvailabilityEnum["onlyMe"] = "OnlyMe";
+})(AvailabilityEnum || (AvailabilityEnum = {}));
+export var LikeActionsEnum;
+(function (LikeActionsEnum) {
+    LikeActionsEnum["like"] = "Like";
+    LikeActionsEnum["unlike"] = "Unlike";
+})(LikeActionsEnum || (LikeActionsEnum = {}));

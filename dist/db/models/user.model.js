@@ -4,30 +4,19 @@ import EncryptionSecurityUtil from "../../utils/security/encryption.security.js"
 import Hashing from "../../utils/security/hash.security.js";
 import ModelsNames from "../../utils/constants/models_names.constants.js";
 import KeyUtil from "../../utils/multer/key.multer.js";
+import { atByObjectSchema, codeExpireCountObjectSchema, } from "./common.model.js";
 export const userSchema = new mongoose.Schema({
     firstName: { type: String, required: true, minlength: 2, maxlength: 25 },
     lastName: { type: String, required: true, minlength: 2, maxlength: 25 },
     email: { type: String, required: true, unique: true },
-    confirmEmailOtp: {
-        code: { type: String },
-        expiresAt: { type: Date },
-        count: { type: Number, default: 0 },
-    },
+    confirmEmailOtp: codeExpireCountObjectSchema,
     confirmedAt: { type: Date },
     password: { type: String, required: true },
-    resetPasswordOtp: {
-        code: { type: String },
-        expiresAt: { type: Date },
-        count: { type: Number, default: 0 },
-    },
+    resetPasswordOtp: codeExpireCountObjectSchema,
     resetPasswordVerificationExpiresAt: { type: Date },
     lastResetPasswordAt: { type: Date },
     twoFactorEnabledAt: Date,
-    twoFactorOtp: {
-        code: { type: String, required: true },
-        expiresAt: { type: Date, required: true },
-        count: { type: Number, default: 0 },
-    },
+    twoFactorOtp: codeExpireCountObjectSchema,
     changeCredentialsTime: { type: Date },
     phone: { type: String, required: true },
     profilePicture: {
@@ -47,20 +36,15 @@ export const userSchema = new mongoose.Schema({
         enum: Object.values(UserRoleEnum),
         default: UserRoleEnum.USER,
     },
-    freezed: {
-        at: Date,
-        by: { type: mongoose.Types.ObjectId, ref: ModelsNames.userModel },
-    },
-    restored: {
-        at: Date,
-        by: { type: mongoose.Types.ObjectId, ref: ModelsNames.userModel },
-    },
+    freezed: atByObjectSchema,
+    restored: atByObjectSchema,
     friends: {
         type: [mongoose.Schema.Types.ObjectId],
         ref: ModelsNames.userModel,
     },
 }, {
     timestamps: true,
+    strictQuery: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
 });
@@ -138,6 +122,16 @@ userSchema.post("init", async function () {
     if (this.phone && EncryptionSecurityUtil.isEncrypted({ text: this.phone })) {
         this.phone = EncryptionSecurityUtil.decryptText({ cipherText: this.phone });
     }
+});
+userSchema.pre(["find", "findOne"], function (next) {
+    const query = this.getQuery();
+    if (query.paranoid === false) {
+        this.setQuery({ ...query });
+    }
+    else {
+        this.setQuery({ ...query, freezed: { $exists: false } });
+    }
+    next();
 });
 export const UserModel = mongoose.models.User ||
     mongoose.model(ModelsNames.userModel, userSchema);

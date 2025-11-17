@@ -7,7 +7,7 @@ import type { IAtByObject } from "./common.interface.ts";
 import type { HydratedDocument } from "mongoose";
 
 export interface IPost {
-  content?: string;
+  content?: string | undefined;
   attachments?: string[];
   assetsFolderId: string;
 
@@ -15,7 +15,7 @@ export interface IPost {
   allowComments: AllowCommentsEnum;
 
   likes?: Types.ObjectId[];
-  tags?: Types.ObjectId[];
+  tags?: Types.ObjectId[] | undefined;
 
   createdBy: Types.ObjectId;
   freezed?: IAtByObject;
