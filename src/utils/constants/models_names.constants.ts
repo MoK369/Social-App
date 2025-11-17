@@ -6,6 +6,8 @@ abstract class ModelsNames {
   static readonly friendRequestModel = "FriendRequest";
 
   static readonly chatModel = "Chat";
+
+  static readonly postModel = "Post";
 }
 
 export default ModelsNames;

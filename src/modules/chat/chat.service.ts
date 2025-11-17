@@ -6,9 +6,8 @@ import type {
   ISendMessageDto,
 } from "./chat.dto.ts";
 import successHandler from "../../utils/handlers/success.handler.ts";
-import ChatRespository from "../../db/repository/chat.repository.ts";
 import ChatModel from "../../db/models/chat.model.ts";
-import UserRepository from "../../db/repository/user.respository.ts";
+import { UserRepository, ChatRespository } from "../../db/repository/index.ts";
 import { UserModel } from "../../db/models/user.model.ts";
 import { Types } from "mongoose";
 import { NotFoundException } from "../../utils/exceptions/custom.exceptions.ts";

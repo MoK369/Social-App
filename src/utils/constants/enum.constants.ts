@@ -69,3 +69,14 @@ export enum StorageTypesEnum {
   memory = "Memory",
   disk = "Disk",
 }
+
+export enum AllowCommentsEnum {
+  allow = "Allow",
+  deny = "Deny",
+}
+
+export enum AvailabilityEnum {
+  public = "Public",
+  friends = "Friends",
+  onlyMe = "OnlyMe",
+}

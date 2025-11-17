@@ -1,6 +1,10 @@
 import type { Request, Response } from "express";
 import { UserModel, userSchema } from "../../db/models/user.model.ts";
-import UserRepository from "../../db/repository/user.respository.ts";
+import {
+  UserRepository,
+  FriendRequestRepository,
+  RevokedTokenRepository,
+} from "../../db/repository/index.ts";
 import successHandler from "../../utils/handlers/success.handler.ts";
 import type {
   AcceptFriendRequestParamsTypeDto,
@@ -14,7 +18,6 @@ import type {
   SendFreindRequestParamsTypeDto,
 } from "./user.dto.ts";
 import RevokedTokenModel from "../../db/models/revoked_token.model.ts";
-import RevokedTokenRepository from "../../db/repository/revoked_token.repository.ts";
 import Token from "../../utils/security/token.security.ts";
 import S3Service from "../../utils/multer/s3.service.ts";
 import KeyUtil from "../../utils/multer/key.multer.ts";
@@ -39,7 +42,6 @@ import type {
   IRefreshTokenResponse,
   ProfileResponseType,
 } from "./user.entities.ts";
-import FriendRequestRepository from "../../db/repository/friend_request.repository.ts";
 import FriendRequestModel from "../../db/models/friend_request.model.ts";
 import OTP from "../../utils/security/otp.security.ts";
 import { generateNumericId } from "../../utils/security/id.security.ts";

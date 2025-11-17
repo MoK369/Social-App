@@ -3,6 +3,7 @@ import type {
   GenderEnum,
   UserRoleEnum,
 } from "../../utils/constants/enum.constants.ts";
+import type { IAtByObject } from "./common.interface.ts";
 
 export interface IUser {
   id: Types.ObjectId;
@@ -53,14 +54,8 @@ export interface IUser {
 
   createdAt: Date;
   updatedAt: Date;
-  freezed?: {
-    at: Date;
-    by: Types.ObjectId;
-  };
-  restored?: {
-    at: Date;
-    by: Types.ObjectId;
-  };
+  freezed?: IAtByObject;
+  restored?: IAtByObject;
 
   friends: Types.ObjectId[];
 }

@@ -8,6 +8,7 @@ import EncryptionSecurityUtil from "../../utils/security/encryption.security.ts"
 import Hashing from "../../utils/security/hash.security.ts";
 import ModelsNames from "../../utils/constants/models_names.constants.ts";
 import KeyUtil from "../../utils/multer/key.multer.ts";
+import { atByObjectSchema } from "./common.model.ts";
 
 export const userSchema = new mongoose.Schema<IUser>(
   {
@@ -60,14 +61,8 @@ export const userSchema = new mongoose.Schema<IUser>(
       enum: Object.values(UserRoleEnum),
       default: UserRoleEnum.USER,
     },
-    freezed: {
-      at: Date,
-      by: { type: mongoose.Types.ObjectId, ref: ModelsNames.userModel },
-    },
-    restored: {
-      at: Date,
-      by: { type: mongoose.Types.ObjectId, ref: ModelsNames.userModel },
-    },
+    freezed: atByObjectSchema,
+    restored: atByObjectSchema,
 
     friends: {
       type: [mongoose.Schema.Types.ObjectId],

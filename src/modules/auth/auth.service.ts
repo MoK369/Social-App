@@ -9,8 +9,8 @@ import type {
   SignupBodyDtoType,
   VerifyForgetPasswordOtpBodyDtoType,
 } from "./auth.dto.ts";
-import UserRepository from "../../db/repository/user.respository.ts";
-import {UserModel} from "../../db/models/user.model.ts";
+import {UserRepository} from "../../db/repository/index.ts";
+import { UserModel } from "../../db/models/user.model.ts";
 import {
   BadRequestException,
   ConflictException,
@@ -113,7 +113,9 @@ class AuthenticationService {
 
   resendEmilOtp = async (req: Request, res: Response): Promise<Response> => {
     const { email }: ResendEmailOtpBodyDtoType = req.body;
-    const user = await this.userRepository.findByEmail({ email });
+    const user = await this.userRepository.findOne({
+      filter: { email, freezed: { $exists: false } },
+    });
 
     const count = OTP.checkRequestOfNewOTP({ user });
 
@@ -138,7 +140,7 @@ class AuthenticationService {
   };
 
   login = async (req: Request, res: Response): Promise<Response> => {
-    const { email, password }: LoginBodyDtoType = req.body;    
+    const { email, password }: LoginBodyDtoType = req.body;
 
     const user: HIUser | null = await this.userRepository.findOne({
       filter: {
