@@ -11,6 +11,25 @@ class DatabaseRepository {
     find = async ({ filter, projection, options = {}, }) => {
         return this.model.find(filter, projection, options);
     };
+    paginate = async ({ filter, projection, options = {}, page = "all", size, }) => {
+        let docsCount;
+        let totalPages;
+        if (page !== "all") {
+            page = Math.floor(!page || page < 1 ? 1 : page);
+            options.limit = Math.floor(!size || size < 1 ? 5 : size);
+            options.skip = (page - 1) * size;
+            docsCount = await this.model.countDocuments(filter);
+            totalPages = Math.ceil(docsCount / size);
+        }
+        const data = await this.model.find(filter, projection, options);
+        return {
+            docsCount,
+            totalPages,
+            currentPage: page !== "all" ? page : undefined,
+            size: page !== "all" ? size : undefined,
+            data: data,
+        };
+    };
     findOne = async ({ filter, projection, options = {}, }) => {
         return this.model.findOne(filter, projection, options);
     };

@@ -86,3 +86,8 @@ export enum LikeActionsEnum {
   like = "Like",
   unlike = "Unlike",
 }
+
+export enum TaggedInEnum {
+  post = "post",
+  comment = "comment",
+}

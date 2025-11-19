@@ -108,7 +108,9 @@ emailEvent.subscribe({
         to: payload.to,
         html: HTML_EMAIL_TEMPLATE({
           title: subject,
-          message: `${payload.taggingUser} has mentioned you on their new post`,
+          message: `${payload.taggingUser} has mentioned you on their new ${
+            payload.taggedIn?.toString() || "post"
+          }`,
           otpOrLink: "",
         }),
       },

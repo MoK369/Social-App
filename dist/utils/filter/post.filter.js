@@ -12,7 +12,7 @@ export const postFilterBasedOnAvailability = (req) => {
         },
         {
             availability: { $ne: AvailabilityEnum.onlyMe },
-            tags: { $in: req.user.id },
+            tags: { $in: [req.user.id] },
         },
     ];
 };

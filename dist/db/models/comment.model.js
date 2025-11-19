@@ -1,15 +1,24 @@
-import mongoose from "mongoose";
-import { AllowCommentsEnum, AvailabilityEnum, EmailEventsEnum, TaggedInEnum, } from "../../utils/constants/enum.constants.js";
+import mongoose, { Model } from "mongoose";
 import ModelsNames from "../../utils/constants/models_names.constants.js";
 import { atByObjectSchema } from "./common.model.js";
-import { UserRepository } from "../repository/index.js";
+import UserRepository from "../repository/user.respository.js";
 import { UserModel } from "./user.model.js";
 import emailEvent from "../../utils/events/email.event.js";
-const postSchema = new mongoose.Schema({
+import { EmailEventsEnum, TaggedInEnum, } from "../../utils/constants/enum.constants.js";
+const commentSchema = new mongoose.Schema({
+    postId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: ModelsNames.postModel,
+        required: true,
+    },
+    commentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: ModelsNames.commentModel,
+    },
     content: {
         type: String,
         minLength: 2,
-        maxLength: 20000,
+        maxLength: 1000,
         required: function () {
             return !this.attachments?.length;
         },
@@ -19,17 +28,6 @@ const postSchema = new mongoose.Schema({
         required: function () {
             return !this.content?.length;
         },
-    },
-    assetsFolderId: { type: String, required: true },
-    availability: {
-        type: String,
-        enum: Object.values(AvailabilityEnum),
-        default: AvailabilityEnum.public,
-    },
-    allowComments: {
-        type: String,
-        enum: Object.values(AllowCommentsEnum),
-        default: AllowCommentsEnum.allow,
     },
     likes: [
         { type: mongoose.Schema.Types.ObjectId, ref: ModelsNames.userModel },
@@ -46,11 +44,10 @@ const postSchema = new mongoose.Schema({
     restored: atByObjectSchema,
 }, {
     timestamps: true,
-    strictQuery: true,
     toObject: { virtuals: true },
     toJSON: { virtuals: true },
 });
-postSchema.post("save", async function () {
+commentSchema.post("save", async function () {
     console.log({ doc: this });
     if (this.tags?.length) {
         const userRepository = new UserRepository(UserModel);
@@ -68,13 +65,13 @@ postSchema.post("save", async function () {
                 payload: {
                     to: user.email,
                     taggingUser: taggingUser.fullName,
-                    taggedIn: TaggedInEnum.post
+                    taggedIn: TaggedInEnum.comment,
                 },
             });
         }
     }
 });
-postSchema.pre(["find", "findOne", "findOneAndUpdate", "updateOne", "countDocuments"], function (next) {
+commentSchema.pre(["find", "findOne", "findOneAndUpdate", "updateOne", "countDocuments"], function (next) {
     const query = this.getQuery();
     if (query.paranoid == false) {
         this.setQuery({ ...query });
@@ -84,6 +81,6 @@ postSchema.pre(["find", "findOne", "findOneAndUpdate", "updateOne", "countDocume
     }
     next();
 });
-const PostModel = mongoose.models.PostModel ||
-    mongoose.model(ModelsNames.postModel, postSchema);
-export default PostModel;
+const CommentModel = mongoose.models.Comment ||
+    mongoose.model(ModelsNames.commentModel, commentSchema);
+export default CommentModel;

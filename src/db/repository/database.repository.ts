@@ -50,6 +50,46 @@ abstract class DatabaseRepository<TDocument> {
     return this.model.find(filter, projection, options);
   };
 
+  paginate = async <TLean extends boolean = false>({
+    filter,
+    projection,
+    options = {},
+    page = "all",
+    size,
+  }: {
+    filter: RootFilterQuery<TDocument>;
+    projection?: ProjectionType<TDocument>;
+    options?: FindFunctionOptionsType<TDocument, TLean>;
+    page: number | "all";
+    size: number;
+  }): Promise<{
+    docsCount?: number | undefined;
+    totalPages?: number | undefined;
+    currentPage?: number | undefined;
+    size?: number | undefined;
+    data: FindFunctionsReturnType<TDocument, TLean>[];
+  }> => {
+    let docsCount;
+    let totalPages;
+    if (page !== "all") {
+      page = Math.floor(!page || page < 1 ? 1 : page);
+      options.limit = Math.floor(!size || size < 1 ? 5 : size);
+      options.skip = (page - 1) * size;
+
+      docsCount = await this.model.countDocuments(filter);
+      totalPages = Math.ceil(docsCount / size);
+    }
+    const data = await this.model.find(filter, projection, options);
+
+    return {
+      docsCount,
+      totalPages,
+      currentPage: page !== "all" ? page : undefined,
+      size: page !== "all" ? size : undefined,
+      data: data as unknown as FindFunctionsReturnType<TDocument, TLean>[],
+    };
+  };
+
   findOne = async <TLean extends boolean = false>({
     filter,
     projection,

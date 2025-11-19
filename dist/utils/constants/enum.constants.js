@@ -87,3 +87,8 @@ export var LikeActionsEnum;
     LikeActionsEnum["like"] = "Like";
     LikeActionsEnum["unlike"] = "Unlike";
 })(LikeActionsEnum || (LikeActionsEnum = {}));
+export var TaggedInEnum;
+(function (TaggedInEnum) {
+    TaggedInEnum["post"] = "post";
+    TaggedInEnum["comment"] = "comment";
+})(TaggedInEnum || (TaggedInEnum = {}));

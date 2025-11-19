@@ -3,10 +3,12 @@ import type { Types } from "mongoose";
 import type Mail from "nodemailer/lib/mailer/index.js";
 import type { Socket } from "socket.io";
 import type { HIUser } from "../../db/interfaces/user.interface.ts";
+import type { TaggedInEnum } from "./enum.constants.ts";
 
 export interface IEmailPayload extends Mail.Options {
   otp?: string;
   taggingUser?: string;
+  taggedIn?: TaggedInEnum;
 }
 
 export interface IS3UploadPayload {

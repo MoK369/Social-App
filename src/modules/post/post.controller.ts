@@ -5,10 +5,19 @@ import CloudMulter from "../../utils/multer/cloud.multer.ts";
 import fileValidation from "../../utils/multer/file_validation.multer.ts";
 import validationMiddleware from "../../middlewares/validation.middleware.ts";
 import PostValidators from "./post.validation.ts";
+import { commentRouter } from "../comment/index.ts";
 
 const postRouter = Router();
+postRouter.use("/:postId/comment", commentRouter);
 
 const postService = new PostService();
+
+postRouter.get(
+  "/",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(PostValidators.getPostList),
+  postService.getPostList
+);
 
 postRouter.post(
   "/",

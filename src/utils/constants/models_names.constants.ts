@@ -8,6 +8,8 @@ abstract class ModelsNames {
   static readonly chatModel = "Chat";
 
   static readonly postModel = "Post";
+
+  static readonly commentModel = "Comment";
 }
 
 export default ModelsNames;

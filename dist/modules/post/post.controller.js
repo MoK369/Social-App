@@ -5,8 +5,11 @@ import CloudMulter from "../../utils/multer/cloud.multer.js";
 import fileValidation from "../../utils/multer/file_validation.multer.js";
 import validationMiddleware from "../../middlewares/validation.middleware.js";
 import PostValidators from "./post.validation.js";
+import { commentRouter } from "../comment/index.js";
 const postRouter = Router();
+postRouter.use("/:postId/comment", commentRouter);
 const postService = new PostService();
+postRouter.get("/", Auths.authenticationMiddleware(), validationMiddleware(PostValidators.getPostList), postService.getPostList);
 postRouter.post("/", Auths.authenticationMiddleware(), CloudMulter.handleArrayFilesUpload({
     fieldName: "attachments",
     maxCount: 2,

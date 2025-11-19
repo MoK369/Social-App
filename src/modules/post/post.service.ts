@@ -4,6 +4,7 @@ import { UserRepository, PostRepository } from "../../db/repository/index.ts";
 import { UserModel, PostModel } from "../../db/models/index.ts";
 import type {
   CreatePostBodyDtoType,
+  GetPostListQueryDtoType,
   LikePostParamsDtoType,
   LikePostQueryDtoType,
   UpdatePostBodyDtoType,
@@ -22,6 +23,7 @@ import {
   LikeActionsEnum,
 } from "../../utils/constants/enum.constants.ts";
 import { postFilterBasedOnAvailability } from "../../utils/filter/post.filter.ts";
+import type { IGetPostListResponse } from "./post.entity.ts";
 
 class PostService {
   private _postRepository = new PostRepository(PostModel);
@@ -224,6 +226,23 @@ class PostService {
     }
 
     return successHandler({ res });
+  };
+
+  getPostList = async (req: Request, res: Response): Promise<Response> => {
+    const { page = 1, size = 5 } = req.query as GetPostListQueryDtoType;
+
+    const paginationResult = await this._postRepository.paginate({
+      filter: {
+        $or: postFilterBasedOnAvailability(req),
+      },
+      page,
+      size,
+    });
+
+    return successHandler<IGetPostListResponse>({
+      res,
+      body: paginationResult,
+    });
   };
 }
 

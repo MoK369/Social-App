@@ -165,5 +165,19 @@ class PostService {
         }
         return successHandler({ res });
     };
+    getPostList = async (req, res) => {
+        const { page = 1, size = 5 } = req.query;
+        const paginationResult = await this._postRepository.paginate({
+            filter: {
+                $or: postFilterBasedOnAvailability(req),
+            },
+            page,
+            size,
+        });
+        return successHandler({
+            res,
+            body: paginationResult,
+        });
+    };
 }
 export default PostService;

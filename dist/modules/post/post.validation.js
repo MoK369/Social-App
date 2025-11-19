@@ -80,7 +80,10 @@ class PostValidators {
                 .optional(),
             removedAttachments: z.array(z.string()).max(2).optional(),
             tags: z.array(generalValidationFields.objectId).max(10).optional(),
-            removedTags: z.array(generalValidationFields.objectId).max(10).optional(),
+            removedTags: z
+                .array(generalValidationFields.objectId)
+                .max(10)
+                .optional(),
         })
             .superRefine((data, ctx) => {
             if (!Object.values(data).length) {
@@ -114,6 +117,15 @@ class PostValidators {
                     message: "Duplication exists in remove tagged users",
                 });
             }
+        }),
+    };
+    static getPostList = {
+        query: z.strictObject({
+            page: z.union([
+                z.literal("all"),
+                z.coerce.number().int().min(1).max(100).optional(),
+            ]),
+            size: z.coerce.number().int().min(1).max(100).optional(),
         }),
     };
 }
