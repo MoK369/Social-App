@@ -11,6 +11,7 @@ import chatRouter from "../chat/index.js";
 const userRouter = Router();
 userRouter.use("/:userId/chat", chatRouter);
 userRouter.get("/", Auths.authenticationMiddleware(), userService.profile);
+userRouter.get("/dashboard", Auths.combined({ accessRoles: userAuthorizationEndpoints.dashboard }), userService.dashboard);
 userRouter.post("/logout", Auths.authenticationMiddleware(), validationMiddleware(UserValidators.logout), userService.logout);
 userRouter.post("/refresh-token", Auths.authenticationMiddleware({ tokenType: TokenTypesEnum.refresh }), userService.refreshToken);
 userRouter.post("/:userId/send-friend-request", Auths.authenticationMiddleware(), validationMiddleware(UserValidators.sendFriendRequest), userService.sendFriendRequest);
@@ -30,6 +31,7 @@ userRouter.patch("/profile-cover-images", Auths.authenticationMiddleware(), Clou
 }), validationMiddleware(UserValidators.profileCoverImages), userService.profileCoverImages);
 userRouter.patch("/accept-friend-request/:friendRequestId", Auths.authenticationMiddleware(), validationMiddleware(UserValidators.acceptFriendRequest), userService.acceptFriendRequest);
 userRouter.patch("/:userId/restore-account", Auths.combined({ accessRoles: userAuthorizationEndpoints.restoreAccount }), validationMiddleware(UserValidators.restoreAccount), userService.restoreAccount);
+userRouter.patch("/:userId/change-role", Auths.combined({ accessRoles: userAuthorizationEndpoints.changeRole }), validationMiddleware(UserValidators.restoreAccount), userService.changeRole);
 userRouter.delete("/reject-friend-request/:friendRequestId", Auths.authenticationMiddleware(), validationMiddleware(UserValidators.rejectFreindRequest), userService.rejectFriendRequest);
 userRouter.delete("{/:userId}/freeze-account", Auths.authenticationMiddleware(), validationMiddleware(UserValidators.freezeAccount), userService.freezeAccount);
 userRouter.delete("/:userId/delete-account", Auths.combined({ accessRoles: userAuthorizationEndpoints.deleteAccount }), validationMiddleware(UserValidators.deleteAccount), userService.hardDeleteAccount);

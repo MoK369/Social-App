@@ -2,6 +2,7 @@ import z from "zod";
 import {
   LogoutStatusEnum,
   StorageTypesEnum,
+  UserRoleEnum,
 } from "../../utils/constants/enum.constants.ts";
 import generalValidationFields from "../../utils/constants/validation.constants.ts";
 import fileValidation from "../../utils/multer/file_validation.multer.ts";
@@ -77,6 +78,13 @@ class UserValidators {
         error: "params argument is missing",
       }
     ),
+  };
+
+  static changeRole = {
+    params: this.restoreAccount.params,
+    body: z.strictObject({
+      role: z.enum(Object.values(UserRoleEnum)),
+    }),
   };
 
   static deleteAccount = {

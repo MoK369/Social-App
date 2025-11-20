@@ -8,7 +8,7 @@ class DatabaseRepository {
     }, }) => {
         return this.model.create(data, options);
     };
-    find = async ({ filter, projection, options = {}, }) => {
+    find = async ({ filter = {}, projection, options = {}, } = {}) => {
         return this.model.find(filter, projection, options);
     };
     paginate = async ({ filter, projection, options = {}, page = "all", size, }) => {

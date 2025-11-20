@@ -4,6 +4,12 @@ import type Mail from "nodemailer/lib/mailer/index.js";
 import type { Socket } from "socket.io";
 import type { HIUser } from "../../db/interfaces/user.interface.ts";
 import type { TaggedInEnum } from "./enum.constants.ts";
+import type {
+  FindFunctionsReturnType,
+  LeanType,
+} from "../types/find_functions.type.ts";
+import type { FindPostCursorFunctionReturnType } from "../types/find_post_cursor_function.type.ts";
+import type { IPost } from "../../db/interfaces/post.interface.ts";
 
 export interface IEmailPayload extends Mail.Options {
   otp?: string;
@@ -27,4 +33,23 @@ export interface IAuthSocket extends Socket {
     user: Partial<HIUser>;
     payload: JwtPayload;
   };
+}
+
+export interface IPaginationResult<TDocument, TLean extends LeanType = false> {
+  docsCount?: number | undefined;
+  totalPages?: number | undefined;
+  currentPage?: number | undefined;
+  size?: number | undefined;
+  data?: FindFunctionsReturnType<TDocument, TLean>[];
+}
+
+export interface IPaginationPostResult<
+  TLean extends LeanType = false
+> {
+  docsCount?: number | undefined;
+  totalPages?: number | undefined;
+  currentPage?: number | undefined;
+  size?: number | undefined;
+  data?: FindFunctionsReturnType<IPost, TLean>[];
+  result?: FindPostCursorFunctionReturnType<TLean>;
 }

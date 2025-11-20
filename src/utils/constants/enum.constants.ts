@@ -11,6 +11,7 @@ export enum GenderEnum {
 export enum UserRoleEnum {
   USER = "User",
   ADMIN = "Admin",
+  SUPERADMIN = "SuperAdmin",
 }
 
 export enum ErrorCodesEnum {

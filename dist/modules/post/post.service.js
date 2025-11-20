@@ -171,6 +171,35 @@ class PostService {
             filter: {
                 $or: postFilterBasedOnAvailability(req),
             },
+            options: {
+                populate: [
+                    {
+                        path: "comments",
+                        match: {
+                            commentId: { $exists: false },
+                            freezed: { $exists: false },
+                        },
+                        populate: [
+                            {
+                                path: "reply",
+                                match: {
+                                    commentId: { $exists: true },
+                                    freezed: { $exists: false },
+                                },
+                                populate: [
+                                    {
+                                        path: "reply",
+                                        match: {
+                                            commentId: { $exists: true },
+                                            freezed: { $exists: false },
+                                        },
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
             page,
             size,
         });

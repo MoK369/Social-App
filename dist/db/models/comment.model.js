@@ -81,6 +81,12 @@ commentSchema.pre(["find", "findOne", "findOneAndUpdate", "updateOne", "countDoc
     }
     next();
 });
+commentSchema.virtual("reply", {
+    localField: "_id",
+    foreignField: "commentId",
+    ref: ModelsNames.commentModel,
+    justOne: true,
+});
 const CommentModel = mongoose.models.Comment ||
     mongoose.model(ModelsNames.commentModel, commentSchema);
 export default CommentModel;

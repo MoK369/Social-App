@@ -15,6 +15,12 @@ userRouter.use("/:userId/chat", chatRouter);
 
 userRouter.get("/", Auths.authenticationMiddleware(), userService.profile);
 
+userRouter.get(
+  "/dashboard",
+  Auths.combined({accessRoles: userAuthorizationEndpoints.dashboard}),
+  userService.dashboard
+);
+
 userRouter.post(
   "/logout",
   Auths.authenticationMiddleware(),
@@ -92,6 +98,13 @@ userRouter.patch(
   Auths.combined({ accessRoles: userAuthorizationEndpoints.restoreAccount }),
   validationMiddleware(UserValidators.restoreAccount),
   userService.restoreAccount
+);
+
+userRouter.patch(
+  "/:userId/change-role",
+  Auths.combined({ accessRoles: userAuthorizationEndpoints.changeRole }),
+  validationMiddleware(UserValidators.restoreAccount),
+  userService.changeRole
 );
 
 userRouter.delete(

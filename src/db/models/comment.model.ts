@@ -103,6 +103,15 @@ commentSchema.pre(
   }
 );
 
+// commentSchema._id = commentSchema.commentId
+commentSchema.virtual("reply", {
+  localField: "_id",
+  foreignField: "commentId",
+  ref: ModelsNames.commentModel,
+  justOne: true,
+});
+
+
 const CommentModel =
   (mongoose.models.Comment as Model<IComment>) ||
   mongoose.model<IComment>(ModelsNames.commentModel, commentSchema);

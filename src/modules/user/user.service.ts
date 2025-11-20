@@ -3,16 +3,20 @@ import {
   UserModel,
   userSchema,
   RevokedTokenModel,
-  FriendRequestModel
+  FriendRequestModel,
+  PostModel,
 } from "../../db/models/index.ts";
 import {
   UserRepository,
   FriendRequestRepository,
   RevokedTokenRepository,
+  PostRepository,
 } from "../../db/repository/index.ts";
 import successHandler from "../../utils/handlers/success.handler.ts";
 import type {
   AcceptFriendRequestParamsTypeDto,
+  ChangeRoleBodyTypeDto,
+  ChangeRoleParamsTypeDto,
   ConfirmTwoFactorBodyTypeDto,
   DeleteAccountParamsTypeDto,
   FreezeAccountParamsTypeDto,
@@ -56,6 +60,7 @@ import mongoose, { type Default__v, type Require_id } from "mongoose";
 
 class UserService {
   protected userRepository = new UserRepository(UserModel);
+  protected postRepository = new PostRepository(PostModel);
   protected revokedTokenRepository = new RevokedTokenRepository(
     RevokedTokenModel
   );
@@ -488,6 +493,44 @@ class UserService {
       throw new NotFoundException(
         "Failed to reject, friend request doesn't exist or already accepted"
       );
+    }
+
+    return successHandler({ res });
+  };
+
+  dashboard = async (req: Request, res: Response): Promise<Response> => {
+    const [users, posts] = await Promise.allSettled([
+      this.userRepository.find(),
+      this.postRepository.find(),
+    ]);
+
+    return successHandler({ res, body: { users, posts } });
+  };
+
+  changeRole = async (req: Request, res: Response): Promise<Response> => {
+    const { userId } = req.params as ChangeRoleParamsTypeDto;
+    const { role } = req.body as ChangeRoleBodyTypeDto;
+
+    const denyRoles: UserRoleEnum[] = [role, UserRoleEnum.SUPERADMIN];
+    if (req.user!.role === UserRoleEnum.ADMIN) {
+      if (role === UserRoleEnum.SUPERADMIN) {
+        throw new ForbiddenException(
+          "You don't have the privilage to make a user Super Admin"
+        );
+      }
+
+      denyRoles.push(UserRoleEnum.ADMIN);
+    }
+
+    const user = await this.userRepository.findOneAndUpdate({
+      filter: { _id: userId, role: { $nin: denyRoles } },
+      update: {
+        role,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException("Invalid userId or userId not found");
     }
 
     return successHandler({ res });

@@ -20,6 +20,7 @@ class Token {
     static getSignatureLevel = ({ role, }) => {
         switch (role) {
             case UserRoleEnum.ADMIN:
+            case UserRoleEnum.SUPERADMIN:
                 return SignatureLevelsEnum.System;
             default:
                 return SignatureLevelsEnum.Bearer;

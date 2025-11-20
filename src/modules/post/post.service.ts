@@ -24,10 +24,12 @@ import {
 } from "../../utils/constants/enum.constants.ts";
 import { postFilterBasedOnAvailability } from "../../utils/filter/post.filter.ts";
 import type { IGetPostListResponse } from "./post.entity.ts";
+import type { IPaginationPostResult } from "../../utils/constants/interface.constants.ts";
 
 class PostService {
   private _postRepository = new PostRepository(PostModel);
   private _userRepository = new UserRepository(UserModel);
+  //private _commentRepository = new CommentRepository(CommentModel);
 
   createPost = async (req: Request, res: Response): Promise<Response> => {
     const { content, attachments, allowComments, availability, tags } = req
@@ -231,13 +233,43 @@ class PostService {
   getPostList = async (req: Request, res: Response): Promise<Response> => {
     const { page = 1, size = 5 } = req.query as GetPostListQueryDtoType;
 
-    const paginationResult = await this._postRepository.paginate({
-      filter: {
-        $or: postFilterBasedOnAvailability(req),
-      },
-      page,
-      size,
-    });
+    const paginationResult: IPaginationPostResult =
+      await this._postRepository.paginate({
+        filter: {
+          $or: postFilterBasedOnAvailability(req),
+        },
+        options: {
+          populate: [
+            {
+              path: "comments",
+              match: {
+                commentId: { $exists: false },
+                freezed: { $exists: false },
+              },
+              populate: [
+                {
+                  path: "reply",
+                  match: {
+                    commentId: { $exists: true },
+                    freezed: { $exists: false },
+                  },
+                  populate: [
+                    {
+                      path: "reply",
+                      match: {
+                        commentId: { $exists: true },
+                        freezed: { $exists: false },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        page,
+        size,
+      });
 
     return successHandler<IGetPostListResponse>({
       res,

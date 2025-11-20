@@ -13,6 +13,14 @@ export type RestoreAccountParamsTypeDto = z.infer<
   typeof UserValidation.restoreAccount.params
 >;
 
+export type ChangeRoleParamsTypeDto = z.infer<
+  typeof UserValidation.changeRole.params
+>;
+
+export type ChangeRoleBodyTypeDto = z.infer<
+  typeof UserValidation.changeRole.body
+>;
+
 export type DeleteAccountParamsTypeDto = z.infer<
   typeof UserValidation.deleteAccount.params
 >;

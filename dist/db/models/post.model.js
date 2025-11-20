@@ -68,7 +68,7 @@ postSchema.post("save", async function () {
                 payload: {
                     to: user.email,
                     taggingUser: taggingUser.fullName,
-                    taggedIn: TaggedInEnum.post
+                    taggedIn: TaggedInEnum.post,
                 },
             });
         }
@@ -83,6 +83,12 @@ postSchema.pre(["find", "findOne", "findOneAndUpdate", "updateOne", "countDocume
         this.setQuery({ ...query, freezed: { $exists: false } });
     }
     next();
+});
+postSchema.virtual("comments", {
+    localField: "_id",
+    foreignField: "postId",
+    ref: ModelsNames.commentModel,
+    justOne: true,
 });
 const PostModel = mongoose.models.PostModel ||
     mongoose.model(ModelsNames.postModel, postSchema);

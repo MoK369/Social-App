@@ -22,6 +22,7 @@ import type {
   UpdateFunctionsUpdateObjectType,
   UpdateType,
 } from "../../utils/types/update_functions.type.ts";
+import type { IPaginationResult } from "../../utils/constants/interface.constants.ts";
 
 abstract class DatabaseRepository<TDocument> {
   constructor(protected readonly model: Model<TDocument>) {}
@@ -39,14 +40,14 @@ abstract class DatabaseRepository<TDocument> {
   };
 
   find = async <TLean extends boolean = false>({
-    filter,
+    filter = {},
     projection,
     options = {},
   }: {
-    filter: RootFilterQuery<TDocument>;
+    filter?: RootFilterQuery<TDocument>;
     projection?: ProjectionType<TDocument>;
     options?: FindFunctionOptionsType<TDocument, TLean>;
-  }): Promise<FindFunctionsReturnType<TDocument, TLean>[]> => {
+  }={}): Promise<FindFunctionsReturnType<TDocument, TLean>[]> => {
     return this.model.find(filter, projection, options);
   };
 
@@ -62,13 +63,7 @@ abstract class DatabaseRepository<TDocument> {
     options?: FindFunctionOptionsType<TDocument, TLean>;
     page: number | "all";
     size: number;
-  }): Promise<{
-    docsCount?: number | undefined;
-    totalPages?: number | undefined;
-    currentPage?: number | undefined;
-    size?: number | undefined;
-    data: FindFunctionsReturnType<TDocument, TLean>[];
-  }> => {
+  }): Promise<IPaginationResult<TDocument, TLean>> => {
     let docsCount;
     let totalPages;
     if (page !== "all") {

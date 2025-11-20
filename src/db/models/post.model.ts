@@ -87,7 +87,7 @@ postSchema.post("save", async function () {
         payload: {
           to: user!.email,
           taggingUser: taggingUser!.fullName!,
-          taggedIn: TaggedInEnum.post
+          taggedIn: TaggedInEnum.post,
         },
       });
     }
@@ -107,6 +107,14 @@ postSchema.pre(
     next();
   }
 );
+
+// postSchema._id = commentSchema.postId
+postSchema.virtual("comments", {
+  localField: "_id",
+  foreignField: "postId",
+  ref: ModelsNames.commentModel,
+  justOne: true,
+});
 
 const PostModel =
   (mongoose.models.PostModel as mongoose.Model<IPost>) ||

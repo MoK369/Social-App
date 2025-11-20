@@ -1,5 +1,5 @@
 import z from "zod";
-import { LogoutStatusEnum, StorageTypesEnum, } from "../../utils/constants/enum.constants.js";
+import { LogoutStatusEnum, StorageTypesEnum, UserRoleEnum, } from "../../utils/constants/enum.constants.js";
 import generalValidationFields from "../../utils/constants/validation.constants.js";
 import fileValidation from "../../utils/multer/file_validation.multer.js";
 class UserValidators {
@@ -59,6 +59,12 @@ class UserValidators {
             userId: generalValidationFields.objectId,
         }, {
             error: "params argument is missing",
+        }),
+    };
+    static changeRole = {
+        params: this.restoreAccount.params,
+        body: z.strictObject({
+            role: z.enum(Object.values(UserRoleEnum)),
         }),
     };
     static deleteAccount = {

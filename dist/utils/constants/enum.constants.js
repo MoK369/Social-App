@@ -12,6 +12,7 @@ export var UserRoleEnum;
 (function (UserRoleEnum) {
     UserRoleEnum["USER"] = "User";
     UserRoleEnum["ADMIN"] = "Admin";
+    UserRoleEnum["SUPERADMIN"] = "SuperAdmin";
 })(UserRoleEnum || (UserRoleEnum = {}));
 export var ErrorCodesEnum;
 (function (ErrorCodesEnum) {

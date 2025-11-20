@@ -1,5 +1,5 @@
-import { UserModel, userSchema, RevokedTokenModel, FriendRequestModel } from "../../db/models/index.js";
-import { UserRepository, FriendRequestRepository, RevokedTokenRepository, } from "../../db/repository/index.js";
+import { UserModel, userSchema, RevokedTokenModel, FriendRequestModel, PostModel, } from "../../db/models/index.js";
+import { UserRepository, FriendRequestRepository, RevokedTokenRepository, PostRepository, } from "../../db/repository/index.js";
 import successHandler from "../../utils/handlers/success.handler.js";
 import Token from "../../utils/security/token.security.js";
 import S3Service from "../../utils/multer/s3.service.js";
@@ -14,6 +14,7 @@ import emailEvent from "../../utils/events/email.event.js";
 import mongoose, {} from "mongoose";
 class UserService {
     userRepository = new UserRepository(UserModel);
+    postRepository = new PostRepository(PostModel);
     revokedTokenRepository = new RevokedTokenRepository(RevokedTokenModel);
     friendRequestRepository = new FriendRequestRepository(FriendRequestModel);
     enableTwoFactor = async (req, res) => {
@@ -355,6 +356,34 @@ class UserService {
         });
         if (!friendRequest) {
             throw new NotFoundException("Failed to reject, friend request doesn't exist or already accepted");
+        }
+        return successHandler({ res });
+    };
+    dashboard = async (req, res) => {
+        const [users, posts] = await Promise.allSettled([
+            this.userRepository.find(),
+            this.postRepository.find(),
+        ]);
+        return successHandler({ res, body: { users, posts } });
+    };
+    changeRole = async (req, res) => {
+        const { userId } = req.params;
+        const { role } = req.body;
+        const denyRoles = [role, UserRoleEnum.SUPERADMIN];
+        if (req.user.role === UserRoleEnum.ADMIN) {
+            if (role === UserRoleEnum.SUPERADMIN) {
+                throw new ForbiddenException("You don't have the privilage to make a user Super Admin");
+            }
+            denyRoles.push(UserRoleEnum.ADMIN);
+        }
+        const user = await this.userRepository.findOneAndUpdate({
+            filter: { _id: userId, role: { $nin: denyRoles } },
+            update: {
+                role,
+            },
+        });
+        if (!user) {
+            throw new NotFoundException("Invalid userId or userId not found");
         }
         return successHandler({ res });
     };
