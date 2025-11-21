@@ -172,6 +172,12 @@ abstract class PostValidators {
       size: z.coerce.number().int().min(1).max(100).optional(),
     }),
   };
+
+  static getPostById = {
+    params: z.strictObject({
+      postId: generalValidationFields.objectId,
+    }),
+  };
 }
 
 export default PostValidators;

@@ -115,6 +115,13 @@ userRouter.delete(
 );
 
 userRouter.delete(
+  "/unfriend/:friendId",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(UserValidators.unFriend),
+  userService.unfriend
+);
+
+userRouter.delete(
   "{/:userId}/freeze-account",
   Auths.authenticationMiddleware(),
   validationMiddleware(UserValidators.freezeAccount),

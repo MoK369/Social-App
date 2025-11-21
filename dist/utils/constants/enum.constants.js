@@ -34,6 +34,7 @@ export var EmailEventsEnum;
     EmailEventsEnum["enableTwoFactor"] = "enableTwoFactorAuth";
     EmailEventsEnum["loginWithTwoFactor"] = "loginWithTwoFactor";
     EmailEventsEnum["tagNotifyingEmail"] = "tagNotifyingEmail";
+    EmailEventsEnum["unfriendNotifyingEmail"] = "unfriendNotifyingEmail";
 })(EmailEventsEnum || (EmailEventsEnum = {}));
 export var S3EventsEnum;
 (function (S3EventsEnum) {

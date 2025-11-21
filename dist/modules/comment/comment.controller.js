@@ -7,6 +7,7 @@ import CommentService from "./comment.service.js";
 import CommentValidator from "./comment.validation.js";
 const commentRouter = Router({ mergeParams: true });
 const commentService = new CommentService();
+commentRouter.get("/:commentId", Auths.authenticationMiddleware(), validationMiddleware(CommentValidator.getCommentById), commentService.getCommentById);
 commentRouter.post("/", Auths.authenticationMiddleware(), CloudMulter.handleArrayFilesUpload({
     fieldName: "attachments",
     maxCount: 2,
@@ -18,7 +19,7 @@ commentRouter.post("/:commentId/reply", Auths.authenticationMiddleware(), CloudM
     maxCount: 2,
     maxFileSize: 1 * 1024 * 1024,
     validation: fileValidation.image,
-}), validationMiddleware(CommentValidator.reployOnComment), commentService.repylOnComment);
+}), validationMiddleware(CommentValidator.reployOnComment), commentService.replyOnComment);
 commentRouter.patch("/:commentId", Auths.authenticationMiddleware(), CloudMulter.handleArrayFilesUpload({
     fieldName: "attachments",
     maxCount: 2,

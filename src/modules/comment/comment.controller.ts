@@ -10,6 +10,13 @@ const commentRouter = Router({ mergeParams: true });
 
 const commentService = new CommentService();
 
+commentRouter.get(
+  "/:commentId",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(CommentValidator.getCommentById),
+  commentService.getCommentById
+);
+
 commentRouter.post(
   "/",
   Auths.authenticationMiddleware(),
@@ -33,7 +40,7 @@ commentRouter.post(
     validation: fileValidation.image,
   }),
   validationMiddleware(CommentValidator.reployOnComment),
-  commentService.repylOnComment
+  commentService.replyOnComment
 );
 
 commentRouter.patch(

@@ -1,5 +1,5 @@
-import { UserModel, userSchema, RevokedTokenModel, FriendRequestModel, PostModel, ChatModel, } from "../../db/models/index.js";
-import { UserRepository, FriendRequestRepository, RevokedTokenRepository, PostRepository, ChatRespository, } from "../../db/repository/index.js";
+import { UserModel, userSchema, RevokedTokenModel, FriendRequestModel, PostModel, ChatModel, CommentModel, } from "../../db/models/index.js";
+import { UserRepository, FriendRequestRepository, RevokedTokenRepository, PostRepository, ChatRespository, CommentRepository, } from "../../db/repository/index.js";
 import successHandler from "../../utils/handlers/success.handler.js";
 import Token from "../../utils/security/token.security.js";
 import S3Service from "../../utils/multer/s3.service.js";
@@ -11,13 +11,14 @@ import OTP from "../../utils/security/otp.security.js";
 import { generateNumericId } from "../../utils/security/id.security.js";
 import Hashing from "../../utils/security/hash.security.js";
 import emailEvent from "../../utils/events/email.event.js";
-import mongoose, {} from "mongoose";
+import mongoose, { Types } from "mongoose";
 class UserService {
-    userRepository = new UserRepository(UserModel);
-    chatRepository = new ChatRespository(ChatModel);
-    postRepository = new PostRepository(PostModel);
-    revokedTokenRepository = new RevokedTokenRepository(RevokedTokenModel);
-    friendRequestRepository = new FriendRequestRepository(FriendRequestModel);
+    _userRepository = new UserRepository(UserModel);
+    _chatRepository = new ChatRespository(ChatModel);
+    _postRepository = new PostRepository(PostModel);
+    _commentRepository = new CommentRepository(CommentModel);
+    _revokedTokenRepository = new RevokedTokenRepository(RevokedTokenModel);
+    _friendRequestRepository = new FriendRequestRepository(FriendRequestModel);
     enableTwoFactor = async (req, res) => {
         const count = OTP.checkRequestOfNewOTP({
             user: req.user,
@@ -25,7 +26,7 @@ class UserService {
             checkEmailStatus: EmailStatusEnum.confirmed,
         });
         const otp = generateNumericId();
-        await this.userRepository.updateOne({
+        await this._userRepository.updateOne({
             filter: { _id: req.user._id },
             update: {
                 twoFactorOtp: {
@@ -58,7 +59,7 @@ class UserService {
             }))) {
             throw new BadRequestException("Invalid OTP or Has Expired!");
         }
-        await this.userRepository.updateById({
+        await this._userRepository.updateById({
             id: req.user._id,
             update: {
                 twoFactorEnabledAt: new Date(),
@@ -71,7 +72,7 @@ class UserService {
         });
     };
     profile = async (req, res) => {
-        const user = await this.userRepository.findById({
+        const user = await this._userRepository.findById({
             id: req.user._id,
             options: {
                 populate: [
@@ -82,7 +83,7 @@ class UserService {
                 ],
             },
         });
-        const groups = (await this.chatRepository.find({
+        const groups = (await this._chatRepository.find({
             filter: {
                 participants: { $in: [req.user._id] },
                 groupName: { $exists: true },
@@ -108,7 +109,7 @@ class UserService {
                 SubKey: subKey,
             });
         }
-        await this.userRepository.updateOne({
+        await this._userRepository.updateOne({
             filter: { _id: req.user._id },
             update: { profilePicture: { subKey: uploadSubKey } },
         });
@@ -130,7 +131,7 @@ class UserService {
             originalname,
             Path: `users/${req.tokenPayload?.id}/profile`,
         });
-        const user = await this.userRepository.findByIdAndUpdate({
+        const user = await this._userRepository.findByIdAndUpdate({
             id: req.user._id,
             update: {
                 profilePicture: { subKey: key },
@@ -173,7 +174,7 @@ class UserService {
         if (req.user.coverImages && req.user.coverImages.length > 0) {
             await S3Service.deleteFiles({ SubKeys: req.user.coverImages });
         }
-        const user = await this.userRepository.findByIdAndUpdate({
+        const user = await this._userRepository.findByIdAndUpdate({
             id: req.user._id,
             update: {
                 coverImages: uploadSubKeys,
@@ -200,13 +201,12 @@ class UserService {
     };
     freezeAccount = async (req, res) => {
         const { userId } = req.params;
-        if (userId && req.user.role !== UserRoleEnum.ADMIN) {
+        if (userId && req.user.role === UserRoleEnum.USER) {
             throw new ForbiddenException("Not Authorized User");
         }
-        const result = await this.userRepository.updateOne({
+        const result = await this._userRepository.updateOne({
             filter: {
                 _id: userId || req.user._id,
-                freezed: { $exists: false },
             },
             update: {
                 freezed: {
@@ -219,14 +219,14 @@ class UserService {
                 },
             },
         });
-        if (result.modifiedCount === 0) {
+        if (!result.modifiedCount) {
             throw new NotFoundException("user not found or already freezed");
         }
         return successHandler({ res, message: "Account Freezed!" });
     };
     restoreAccount = async (req, res) => {
         const { userId } = req.params;
-        const result = await this.userRepository.updateOne({
+        const result = await this._userRepository.updateOne({
             filter: {
                 _id: userId,
                 freezed: { $exists: true },
@@ -249,16 +249,36 @@ class UserService {
     };
     hardDeleteAccount = async (req, res) => {
         const { userId } = req.params;
-        const result = await this.userRepository.deleteOne({
+        const result = await this._userRepository.deleteOne({
             filter: {
                 _id: userId,
                 freezed: { $exists: true },
             },
         });
-        if (result.deletedCount === 0) {
+        if (!result.deletedCount) {
             throw new NotFoundException("invalid user account or already deleted");
         }
-        await S3Service.deleteFolderByPrefix({ FolderPath: `users/${userId}` });
+        await Promise.all([
+            this._userRepository.updateMany({
+                filter: {
+                    friends: { $in: [userId] },
+                },
+                update: {
+                    $pull: { friends: userId },
+                },
+            }),
+            this._postRepository.deleteMany({
+                filter: {
+                    createdBy: userId,
+                },
+            }),
+            this._commentRepository.deleteMany({
+                filter: {
+                    createdBy: userId,
+                },
+            }),
+            S3Service.deleteFolderByPrefix({ FolderPath: `users/${userId}` }),
+        ]);
         return successHandler({ res, message: "Account Deleted Permanently!" });
     };
     logout = async (req, res) => {
@@ -292,7 +312,7 @@ class UserService {
         if (req.user._id.equals(userId)) {
             throw new ConflictException("Can't send friend request to yourself");
         }
-        const checkFriendRequestExists = await this.friendRequestRepository.findOne({
+        const checkFriendRequestExists = await this._friendRequestRepository.findOne({
             filter: {
                 createdBy: { $in: [req.user._id, userId] },
                 sentTo: { $in: [req.user._id, userId] },
@@ -301,7 +321,7 @@ class UserService {
         if (checkFriendRequestExists) {
             throw new ConflictException("Friend request already exists 🙂");
         }
-        const user = await this.userRepository.findOne({
+        const user = await this._userRepository.findOne({
             filter: {
                 _id: userId,
                 freezed: { $exists: false },
@@ -310,7 +330,7 @@ class UserService {
         if (!user) {
             throw new BadRequestException("Invalid recipient 🚫");
         }
-        await this.friendRequestRepository.create({
+        await this._friendRequestRepository.create({
             data: [
                 {
                     createdBy: req.user._id,
@@ -326,7 +346,7 @@ class UserService {
     };
     acceptFriendRequest = async (req, res) => {
         const { friendRequestId } = req.params;
-        const friendRequest = await this.friendRequestRepository.findOneAndUpdate({
+        const friendRequest = await this._friendRequestRepository.findOneAndUpdate({
             filter: {
                 _id: friendRequestId,
                 sentTo: req.user._id,
@@ -340,13 +360,13 @@ class UserService {
             throw new NotFoundException("Friend request doesn't exist or already accepted ");
         }
         await Promise.all([
-            this.userRepository.updateById({
+            this._userRepository.updateById({
                 id: friendRequest.createdBy,
                 update: {
                     $addToSet: { friends: friendRequest.sentTo },
                 },
             }),
-            this.userRepository.updateById({
+            this._userRepository.updateById({
                 id: friendRequest.sentTo,
                 update: {
                     $addToSet: { friends: friendRequest.createdBy },
@@ -357,7 +377,7 @@ class UserService {
     };
     rejectFriendRequest = async (req, res) => {
         const { friendRequestId } = req.params;
-        const friendRequest = await this.friendRequestRepository.findOneAndDelete({
+        const friendRequest = await this._friendRequestRepository.findOneAndDelete({
             filter: {
                 _id: friendRequestId,
                 sentTo: req.user._id,
@@ -369,10 +389,43 @@ class UserService {
         }
         return successHandler({ res });
     };
+    unfriend = async (req, res) => {
+        const { friendId } = req.params;
+        const friendIdObject = Types.ObjectId.createFromHexString(friendId);
+        const friend = await this._userRepository.findOne({
+            filter: { _id: friendId },
+        });
+        if (!friend) {
+            throw new NotFoundException("Invalid friendId");
+        }
+        if (!req.user.friends.includes(friendIdObject)) {
+            throw new NotFoundException("Frienship doesn't exist");
+        }
+        await Promise.all([
+            friend.updateOne({ $pull: { friends: req.user._id } }),
+            req.user.updateOne({ $pull: { friends: friendIdObject } }),
+            this._friendRequestRepository.deleteOne({
+                filter: {
+                    $or: [
+                        { createdBy: req.user._id, sendTo: friendId },
+                        { sentTo: req.user._id, createdBy: friendId },
+                    ],
+                },
+            }),
+        ]);
+        emailEvent.publish({
+            eventName: EmailEventsEnum.unfriendNotifyingEmail,
+            payload: {
+                to: friend.email,
+                removingFriendshipUser: req.user.fullName,
+            },
+        });
+        return successHandler({ res, message: "Friendship has been deleted" });
+    };
     dashboard = async (req, res) => {
         const [users, posts] = await Promise.allSettled([
-            this.userRepository.find(),
-            this.postRepository.find(),
+            this._userRepository.find(),
+            this._postRepository.find(),
         ]);
         return successHandler({ res, body: { users, posts } });
     };
@@ -386,7 +439,7 @@ class UserService {
             }
             denyRoles.push(UserRoleEnum.ADMIN);
         }
-        const user = await this.userRepository.findOneAndUpdate({
+        const user = await this._userRepository.findOneAndUpdate({
             filter: { _id: userId, role: { $nin: denyRoles } },
             update: {
                 role,

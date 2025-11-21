@@ -5,6 +5,7 @@ import UserRepository from "../repository/user.respository.js";
 import { UserModel } from "./user.model.js";
 import emailEvent from "../../utils/events/email.event.js";
 import { EmailEventsEnum, TaggedInEnum, } from "../../utils/constants/enum.constants.js";
+import GetFullUrl from "../../utils/url/get_full.url.js";
 const commentSchema = new mongoose.Schema({
     postId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -88,6 +89,16 @@ commentSchema.virtual("reply", {
     ref: ModelsNames.commentModel,
     justOne: true,
 });
+commentSchema.methods.toJSON = function () {
+    const { _id, ...restObject } = this.toObject();
+    if (restObject?.attachments) {
+        restObject.attachments = GetFullUrl.getFullUrlOfAttachments(restObject.attachments);
+    }
+    return {
+        id: _id,
+        ...restObject,
+    };
+};
 const CommentModel = mongoose.models.Comment ||
     mongoose.model(ModelsNames.commentModel, commentSchema);
 export default CommentModel;

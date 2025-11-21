@@ -5,6 +5,7 @@ import { atByObjectSchema } from "./common.model.js";
 import { UserRepository } from "../repository/index.js";
 import { UserModel } from "./user.model.js";
 import emailEvent from "../../utils/events/email.event.js";
+import GetFullUrl from "../../utils/url/get_full.url.js";
 const postSchema = new mongoose.Schema({
     content: {
         type: String,
@@ -50,6 +51,17 @@ const postSchema = new mongoose.Schema({
     toObject: { virtuals: true },
     toJSON: { virtuals: true },
 });
+postSchema.methods.toJSON = function () {
+    console.log({ post: this });
+    const { _id, assetsFolderId, ...restObject } = this.toObject();
+    if (restObject?.attachments) {
+        restObject.attachments = GetFullUrl.getFullUrlOfAttachments(restObject.attachments);
+    }
+    return {
+        id: _id,
+        ...restObject,
+    };
+};
 postSchema.post("save", async function () {
     console.log({ doc: this });
     if (this.tags?.length) {

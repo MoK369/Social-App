@@ -118,4 +118,22 @@ emailEvent.subscribe({
   },
 });
 
+emailEvent.subscribe({
+  eventName: EmailEventsEnum.unfriendNotifyingEmail,
+  backgroundFunction: async (payload) => {
+    const subject = "Friendship Removed";
+    await sendEmail({
+      data: {
+        subject,
+        to: payload.to,
+        html: HTML_EMAIL_TEMPLATE({
+          title: subject,
+          message: `${payload.removingFriendshipUser} has removed the friendship between you and them`,
+          otpOrLink: "",
+        }),
+      },
+    });
+  },
+});
+
 export default emailEvent;

@@ -10,6 +10,7 @@ const postRouter = Router();
 postRouter.use("/:postId/comment", commentRouter);
 const postService = new PostService();
 postRouter.get("/", Auths.authenticationMiddleware(), validationMiddleware(PostValidators.getPostList), postService.getPostList);
+postRouter.get("/:postId", Auths.authenticationMiddleware(), validationMiddleware(PostValidators.getPostById), postService.getPostById);
 postRouter.post("/", Auths.authenticationMiddleware(), CloudMulter.handleArrayFilesUpload({
     fieldName: "attachments",
     maxCount: 2,

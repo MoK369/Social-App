@@ -168,19 +168,26 @@ class PostService {
         }
         return successHandler({ res });
     };
-    getPostList = async (req, res) => {
-        const { page = 1, size = 5 } = req.query;
-        const paginationResult = await this._postRepository.paginate({
-            filter: {
-                $or: postFilterBasedOnAvailability(req),
-            },
-            options: {
+    _populationOfGettingOneCommentOneReplyForPost = () => {
+        return [
+            {
+                path: "comments",
+                match: {
+                    commentId: { $exists: false },
+                    freezed: { $exists: false },
+                },
+                transform(doc, id) {
+                    return doc?.toJSON();
+                },
                 populate: [
                     {
-                        path: "comments",
+                        path: "reply",
                         match: {
-                            commentId: { $exists: false },
+                            commentId: { $exists: true },
                             freezed: { $exists: false },
+                        },
+                        transform(doc, id) {
+                            return doc?.toJSON();
                         },
                         populate: [
                             {
@@ -189,19 +196,24 @@ class PostService {
                                     commentId: { $exists: true },
                                     freezed: { $exists: false },
                                 },
-                                populate: [
-                                    {
-                                        path: "reply",
-                                        match: {
-                                            commentId: { $exists: true },
-                                            freezed: { $exists: false },
-                                        },
-                                    },
-                                ],
+                                transform(doc, id) {
+                                    return doc?.toJSON();
+                                },
                             },
                         ],
                     },
                 ],
+            },
+        ];
+    };
+    getPostList = async (req, res) => {
+        const { page = 1, size = 5 } = req.query;
+        const paginationResult = await this._postRepository.paginate({
+            filter: {
+                $or: postFilterBasedOnAvailability(req),
+            },
+            options: {
+                populate: this._populationOfGettingOneCommentOneReplyForPost(),
             },
             page,
             size,
@@ -210,6 +222,22 @@ class PostService {
             res,
             body: paginationResult,
         });
+    };
+    getPostById = async (req, res) => {
+        const { postId } = req.params;
+        const post = await this._postRepository.findOne({
+            filter: {
+                _id: postId,
+                createdBy: req.user._id,
+            },
+            options: {
+                populate: this._populationOfGettingOneCommentOneReplyForPost(),
+            },
+        });
+        if (!post) {
+            throw new NotFoundException("Invalid postId, or post doesn't exist");
+        }
+        return successHandler({ res, body: { post } });
     };
     freezePost = async (req, res) => {
         const { postId } = req.params;
@@ -225,7 +253,12 @@ class PostService {
             !post.createdBy.equals(req.user._id)) {
             throw new ForbiddenException("Not authorized to freeze this post");
         }
-        await post.updateOne({ freezed: { at: new Date(), by: req.user._id } });
+        await post.updateOne({
+            freezed: { at: new Date(), by: req.user._id },
+            $unset: {
+                restored: true,
+            },
+        });
         return successHandler({ res, message: "Post Freezed Successfully!" });
     };
     deletePost = async (req, res) => {
@@ -245,7 +278,6 @@ class PostService {
                 ],
             },
         });
-        console.log(post);
         if (!post) {
             throw new NotFoundException("Invalid postId or not freezed");
         }
@@ -256,17 +288,19 @@ class PostService {
                 freezedBy.role === UserRoleEnum.SUPERADMIN)) {
             throw new ForbiddenException("Not authorized to delete this post");
         }
-        await post.deleteOne();
-        await this._commentRepository.deleteMany({
-            filter: {
-                postId: post._id,
-            },
-        });
-        if (post.attachments?.length) {
-            await S3Service.deleteFolderByPrefix({
-                FolderPath: `users/${post.createdBy}/posts/${post.assetsFolderId}`,
-            });
-        }
+        await Promise.all([
+            post.deleteOne(),
+            this._commentRepository.deleteMany({
+                filter: {
+                    postId: post._id,
+                },
+            }),
+            post.attachments?.length
+                ? S3Service.deleteFolderByPrefix({
+                    FolderPath: `users/${post.createdBy}/posts/${post.assetsFolderId}`,
+                })
+                : undefined,
+        ]);
         return successHandler({ res, message: "Post Deleted Successfully!" });
     };
 }

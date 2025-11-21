@@ -37,6 +37,10 @@ export type RejectFriendRequestParamsTypeDto = z.infer<
   typeof UserValidation.rejectFreindRequest.params
 >;
 
+export type UnfriendParamsTypeDto = z.infer<
+  typeof UserValidation.unFriend.params
+>;
+
 export type ConfirmTwoFactorBodyTypeDto = z.infer<
   typeof UserValidation.confirmTwoFactor.body
 >;

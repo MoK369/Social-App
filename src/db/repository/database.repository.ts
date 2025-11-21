@@ -109,6 +109,22 @@ abstract class DatabaseRepository<TDocument> {
     return this.model.findById(id, projection, options);
   };
 
+  updateMany = async ({
+    filter = {},
+    update,
+    options = {},
+  }: {
+    filter?: RootFilterQuery<TDocument>;
+    update: UpdateQuery<TDocument> | UpdateWithAggregationPipeline;
+    options?: MongooseUpdateQueryOptions<TDocument>;
+  }): Promise<UpdateWriteOpResult> => {
+    return this.model.updateMany(
+      filter,
+      { ...update, $inc: { __v: 1 } },
+      options
+    );
+  };
+ 
   updateOne = async ({
     filter = {},
     update,

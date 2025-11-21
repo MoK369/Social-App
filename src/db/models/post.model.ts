@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import type { IPost } from "../interfaces/post.interface.ts";
+import type { HIPost, IPost } from "../interfaces/post.interface.ts";
 import {
   AllowCommentsEnum,
   AvailabilityEnum,
@@ -11,6 +11,7 @@ import { atByObjectSchema } from "./common.model.ts";
 import { UserRepository } from "../repository/index.ts";
 import { UserModel } from "./user.model.ts";
 import emailEvent from "../../utils/events/email.event.ts";
+import GetFullUrl from "../../utils/url/get_full.url.ts";
 
 const postSchema = new mongoose.Schema<IPost>(
   {
@@ -63,6 +64,22 @@ const postSchema = new mongoose.Schema<IPost>(
     toJSON: { virtuals: true },
   }
 );
+
+postSchema.methods.toJSON = function () {
+  console.log({ post: this });
+  const { _id, assetsFolderId, ...restObject } = (this as HIPost).toObject();
+
+  if (restObject?.attachments) {
+    restObject.attachments = GetFullUrl.getFullUrlOfAttachments(
+      restObject.attachments
+    );
+  }
+
+  return {
+    id: _id,
+    ...restObject,
+  };
+};
 
 // sending notifiying emails to tagged users
 postSchema.post("save", async function () {

@@ -16,6 +16,7 @@ export interface IEmailPayload extends Mail.Options {
   otp?: string;
   taggingUser?: string;
   taggedIn?: TaggedInEnum;
+  removingFriendshipUser?: string;
 }
 
 export interface IMulterFile {

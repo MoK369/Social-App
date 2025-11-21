@@ -19,6 +19,13 @@ postRouter.get(
   postService.getPostList
 );
 
+postRouter.get(
+  "/:postId",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(PostValidators.getPostById),
+  postService.getPostById
+);
+
 postRouter.post(
   "/",
   Auths.authenticationMiddleware(),
@@ -59,13 +66,11 @@ postRouter.patch(
   postService.updatePost
 );
 
-
 postRouter.delete(
   "/:postId/delete",
   Auths.authenticationMiddleware(),
   validationMiddleware(PostValidators.deletePost),
   postService.deletePost
 );
-
 
 export default postRouter;

@@ -9,6 +9,7 @@ import {
   EmailEventsEnum,
   TaggedInEnum,
 } from "../../utils/constants/enum.constants.ts";
+import GetFullUrl from "../../utils/url/get_full.url.ts";
 
 const commentSchema = new mongoose.Schema<IComment>(
   {
@@ -111,6 +112,21 @@ commentSchema.virtual("reply", {
   ref: ModelsNames.commentModel,
   justOne: true,
 });
+
+commentSchema.methods.toJSON = function () {
+  const { _id, ...restObject } = this.toObject();
+
+  if (restObject?.attachments) {
+    restObject.attachments = GetFullUrl.getFullUrlOfAttachments(
+      restObject.attachments
+    );
+  }
+
+  return {
+    id: _id,
+    ...restObject,
+  };
+};
 
 const CommentModel =
   (mongoose.models.Comment as Model<IComment>) ||

@@ -36,6 +36,9 @@ class DatabaseRepository {
     findById = async ({ id, projection, options = {}, }) => {
         return this.model.findById(id, projection, options);
     };
+    updateMany = async ({ filter = {}, update, options = {}, }) => {
+        return this.model.updateMany(filter, { ...update, $inc: { __v: 1 } }, options);
+    };
     updateOne = async ({ filter = {}, update, options = {}, }) => {
         return this.model.updateOne(filter, { ...update, $inc: { __v: 1 } }, options);
     };

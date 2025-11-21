@@ -17,6 +17,10 @@ export type ReplyOnCommentBodyDtoType = z.infer<
   typeof CommentValidator.reployOnComment.body
 >;
 
+export type GetCommentByIdParamsDtoType = z.infer<
+  typeof CommentValidator.getCommentById.params
+>;
+
 export type UpdateCommentParamsDtoType = z.infer<
   typeof CommentValidator.updateComment.params
 >;

@@ -10,6 +10,7 @@ import type {
   CreatePostBodyDtoType,
   DeletePostParamsDtoType,
   FreezePostParamsDtoType,
+  GetPostByIdParamDtoType,
   GetPostListQueryDtoType,
   LikePostParamsDtoType,
   LikePostQueryDtoType,
@@ -23,7 +24,7 @@ import {
 } from "../../utils/exceptions/custom.exceptions.ts";
 import { generateAlphaNumaricId } from "../../utils/security/id.security.ts";
 import S3Service from "../../utils/multer/s3.service.ts";
-import { Types } from "mongoose";
+import { Types, type PopulateOptions } from "mongoose";
 import {
   AllowCommentsEnum,
   AvailabilityEnum,
@@ -31,7 +32,10 @@ import {
   UserRoleEnum,
 } from "../../utils/constants/enum.constants.ts";
 import { postFilterBasedOnAvailability } from "../../utils/filter/post.filter.ts";
-import type { IGetPostListResponse } from "./post.entity.ts";
+import type {
+  IGetPostByIdRespone,
+  IGetPostListResponse,
+} from "./post.entity.ts";
 import type { IPaginationPostResult } from "../../utils/constants/interface.constants.ts";
 import { connectedSockets, io } from "../gateway/gateway.ts";
 import type { FullIUser } from "../../db/interfaces/user.interface.ts";
@@ -244,6 +248,46 @@ class PostService {
     return successHandler({ res });
   };
 
+  private _populationOfGettingOneCommentOneReplyForPost =
+    (): PopulateOptions[] => {
+      return [
+        {
+          path: "comments",
+          match: {
+            commentId: { $exists: false },
+            freezed: { $exists: false },
+          },
+          transform(doc, id) {
+            return doc?.toJSON();
+          },
+          populate: [
+            {
+              path: "reply",
+              match: {
+                commentId: { $exists: true },
+                freezed: { $exists: false },
+              },
+              transform(doc, id) {
+                return doc?.toJSON();
+              },
+              populate: [
+                {
+                  path: "reply",
+                  match: {
+                    commentId: { $exists: true },
+                    freezed: { $exists: false },
+                  },
+                  transform(doc, id) {
+                    return doc?.toJSON();
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ];
+    };
+
   getPostList = async (req: Request, res: Response): Promise<Response> => {
     const { page = 1, size = 5 } = req.query as GetPostListQueryDtoType;
 
@@ -253,33 +297,7 @@ class PostService {
           $or: postFilterBasedOnAvailability(req),
         },
         options: {
-          populate: [
-            {
-              path: "comments",
-              match: {
-                commentId: { $exists: false },
-                freezed: { $exists: false },
-              },
-              populate: [
-                {
-                  path: "reply",
-                  match: {
-                    commentId: { $exists: true },
-                    freezed: { $exists: false },
-                  },
-                  populate: [
-                    {
-                      path: "reply",
-                      match: {
-                        commentId: { $exists: true },
-                        freezed: { $exists: false },
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
+          populate: this._populationOfGettingOneCommentOneReplyForPost(),
         },
         page,
         size,
@@ -289,6 +307,26 @@ class PostService {
       res,
       body: paginationResult,
     });
+  };
+
+  getPostById = async (req: Request, res: Response): Promise<Response> => {
+    const { postId } = req.params as GetPostByIdParamDtoType;
+
+    const post = await this._postRepository.findOne({
+      filter: {
+        _id: postId,
+        createdBy: req.user!._id!,
+      },
+      options: {
+        populate: this._populationOfGettingOneCommentOneReplyForPost(),
+      },
+    });
+
+    if (!post) {
+      throw new NotFoundException("Invalid postId, or post doesn't exist");
+    }
+
+    return successHandler<IGetPostByIdRespone>({ res, body: { post } });
   };
 
   freezePost = async (req: Request, res: Response): Promise<Response> => {
@@ -311,7 +349,12 @@ class PostService {
       throw new ForbiddenException("Not authorized to freeze this post");
     }
 
-    await post.updateOne({ freezed: { at: new Date(), by: req.user!._id! } });
+    await post.updateOne({
+      freezed: { at: new Date(), by: req.user!._id! },
+      $unset: {
+        restored: true,
+      },
+    });
 
     return successHandler({ res, message: "Post Freezed Successfully!" });
   };
@@ -335,8 +378,6 @@ class PostService {
       },
     });
 
-    console.log(post);
-
     if (!post) {
       throw new NotFoundException("Invalid postId or not freezed");
     }
@@ -352,18 +393,19 @@ class PostService {
       throw new ForbiddenException("Not authorized to delete this post");
     }
 
-    await post.deleteOne();
-    await this._commentRepository.deleteMany({
-      filter: {
-        postId: post._id,
-      },
-    });
-
-    if (post.attachments?.length) {
-      await S3Service.deleteFolderByPrefix({
-        FolderPath: `users/${post.createdBy}/posts/${post.assetsFolderId}`,
-      });
-    }
+    await Promise.all([
+      post.deleteOne(),
+      this._commentRepository.deleteMany({
+        filter: {
+          postId: post._id,
+        },
+      }),
+      post.attachments?.length
+        ? S3Service.deleteFolderByPrefix({
+            FolderPath: `users/${post.createdBy}/posts/${post.assetsFolderId}`,
+          })
+        : undefined,
+    ]);
 
     return successHandler({ res, message: "Post Deleted Successfully!" });
   };

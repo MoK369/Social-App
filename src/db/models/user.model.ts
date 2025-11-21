@@ -89,7 +89,9 @@ userSchema.methods.toJSON = function () {
 
   return {
     id: this._id,
-    fullName: `${restObj.firstName} ${restObj.lastName}`,
+    fullName: restObj.firstName
+      ? `${restObj.firstName} ${restObj.lastName}`
+      : undefined,
     email: restObj.email,
     phone: restObj.phone,
     gender: restObj.gender,
@@ -106,7 +108,7 @@ userSchema.methods.toJSON = function () {
 userSchema.set("toObject", {
   transform: (doc, ret) => {
     console.log("inside transform of user toObject");
-    
+
     if (ret?.profilePicture?.subKey) {
       ret.profilePicture.url = KeyUtil.generateS3UploadsUrlFromSubKey({
         req: {

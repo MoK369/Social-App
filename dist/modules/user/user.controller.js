@@ -33,6 +33,7 @@ userRouter.patch("/accept-friend-request/:friendRequestId", Auths.authentication
 userRouter.patch("/:userId/restore-account", Auths.combined({ accessRoles: userAuthorizationEndpoints.restoreAccount }), validationMiddleware(UserValidators.restoreAccount), userService.restoreAccount);
 userRouter.patch("/:userId/change-role", Auths.combined({ accessRoles: userAuthorizationEndpoints.changeRole }), validationMiddleware(UserValidators.restoreAccount), userService.changeRole);
 userRouter.delete("/reject-friend-request/:friendRequestId", Auths.authenticationMiddleware(), validationMiddleware(UserValidators.rejectFreindRequest), userService.rejectFriendRequest);
+userRouter.delete("/unfriend/:friendId", Auths.authenticationMiddleware(), validationMiddleware(UserValidators.unFriend), userService.unfriend);
 userRouter.delete("{/:userId}/freeze-account", Auths.authenticationMiddleware(), validationMiddleware(UserValidators.freezeAccount), userService.freezeAccount);
 userRouter.delete("/:userId/delete-account", Auths.combined({ accessRoles: userAuthorizationEndpoints.deleteAccount }), validationMiddleware(UserValidators.deleteAccount), userService.hardDeleteAccount);
 export default userRouter;

@@ -20,8 +20,11 @@ class CommentService {
                 allowComments: AllowCommentsEnum.allow,
                 $or: postFilterBasedOnAvailability(req),
             },
+            options: {
+                populate: [{ path: "createdBy", select: "email" }],
+            },
         });
-        if (!post) {
+        if (!post || post.createdBy === null) {
             throw new NotFoundException("Invalid postId or post doesn't exist");
         }
         if (tags?.length && tags.includes(req.user._id.toString())) {
@@ -39,7 +42,7 @@ class CommentService {
         if (attachments?.length) {
             attachmentsSubKeys = await S3Service.uploadFiles({
                 Files: attachments,
-                Path: `users/${post.createdBy}/posts/${post.assetsFolderId}/comments`,
+                Path: `users/${post.createdBy._id}/posts/${post.assetsFolderId}/comments`,
             });
         }
         await this._commentRepository
@@ -66,7 +69,53 @@ class CommentService {
             message: "Comment created successfully!",
         });
     };
-    repylOnComment = async (req, res) => {
+    getCommentById = async (req, res) => {
+        const { commentId } = req.params;
+        const comment = await this._commentRepository.findOne({
+            filter: {
+                _id: commentId,
+                createdBy: req.user._id,
+            },
+            options: {
+                populate: [
+                    {
+                        path: "postId",
+                        select: "createdBy",
+                        populate: [
+                            {
+                                path: "createdBy",
+                                select: "email",
+                                transform(doc, id) {
+                                    return doc.toJSON();
+                                },
+                            },
+                        ],
+                        transform(doc, id) {
+                            return doc.toJSON();
+                        },
+                    },
+                    {
+                        path: "reply",
+                        populate: [
+                            {
+                                path: "reply",
+                            },
+                        ],
+                    },
+                ],
+            },
+        });
+        if (!comment) {
+            throw new NotFoundException("Invalid commentId, or comment doesn't exist");
+        }
+        if (comment.postId === null ||
+            comment.postId.createdBy ===
+                null) {
+            throw new NotFoundException("post of this comment is not found");
+        }
+        return successHandler({ res, body: { comment } });
+    };
+    replyOnComment = async (req, res) => {
         const { postId, commentId } = req.params;
         const { content, attachments, tags } = req.validationResult
             .body;
@@ -79,17 +128,20 @@ class CommentService {
                 populate: [
                     {
                         path: "postId",
+                        select: "createdBy",
                         match: {
                             allowComments: AllowCommentsEnum.allow,
                             $or: postFilterBasedOnAvailability(req),
                         },
+                        populate: [{ path: "createdBy", select: "email" }],
                     },
                 ],
             },
         });
         console.log({ comment });
-        if (!comment?.postId) {
-            throw new NotFoundException("Invalid commentId or comment doesn't exist");
+        if (!comment?.postId ||
+            comment.postId.createdBy === null) {
+            throw new NotFoundException("Invalid commentId, comment doesn't exist or post doesn't exit");
         }
         if (tags?.length && tags.includes(req.user._id.toString())) {
             throw new BadRequestException("You can not mention yourself in the post");
@@ -107,9 +159,10 @@ class CommentService {
             const post = comment.postId;
             attachmentsSubKeys = await S3Service.uploadFiles({
                 Files: attachments,
-                Path: `users/${post.createdBy}/posts/${post.assetsFolderId}/comments`,
+                Path: `users/${post.createdBy._id}/posts/${post.assetsFolderId}/comments`,
             });
         }
+        console.log({ attachmentsSubKeys });
         await this._commentRepository
             .create({
             data: [
@@ -148,15 +201,25 @@ class CommentService {
                     {
                         path: "postId",
                         select: "assetsFolderId createdBy",
-                        match: { freezed: { $exists: false } },
+                    },
+                    {
+                        path: "commentId",
+                        select: "createdBy",
                     },
                 ],
             },
         });
         console.log({ comment });
+        console.log({ commntId: comment?.commentId });
+        console.log({
+            commntId: comment?.commentId === null,
+        });
         if (!comment)
             throw new NotFoundException("comment not Found");
-        if (comment.postId == null) {
+        if (comment.commentId === null) {
+            throw new NotFoundException("comment of this reply is not found");
+        }
+        if (comment.postId === null) {
             throw new NotFoundException("post of this comment is not found");
         }
         const post = comment.postId;
@@ -229,16 +292,40 @@ class CommentService {
             filter: {
                 _id: commentId,
             },
+            options: {
+                populate: [
+                    {
+                        path: "postId",
+                        select: "assetsFolderId createdBy",
+                    },
+                    {
+                        path: "commentId",
+                        select: "createdBy",
+                    },
+                ],
+            },
         });
         if (!comment) {
             throw new NotFoundException("Invalid postId or already freezed");
+        }
+        if (comment.commentId === null) {
+            throw new NotFoundException("comment of this reply is not found");
+        }
+        if (comment.postId === null) {
+            throw new NotFoundException("post of this comment is not found");
         }
         if (req.user.role === UserRoleEnum.USER &&
             !comment.createdBy.equals(req.user._id)) {
             throw new ForbiddenException("Not authorized to freeze this post");
         }
         await comment.updateOne({
-            freezed: { at: new Date(), by: req.user._id },
+            freezed: {
+                at: new Date(),
+                by: req.user._id,
+                $unset: {
+                    restored: true,
+                },
+            },
         });
         return successHandler({ res, message: "Comment Freezed Successfully!" });
     };
@@ -269,10 +356,16 @@ class CommentService {
                 freezedBy.role === UserRoleEnum.SUPERADMIN)) {
             throw new ForbiddenException("Not authorized to delete this post");
         }
-        await comment.deleteOne();
-        if (comment.attachments?.length) {
-            await S3Service.deleteFiles({ SubKeys: comment.attachments });
-        }
+        await Promise.all([
+            this._commentRepository.deleteMany({
+                filter: {
+                    $or: [{ _id: commentId }, { commentId }],
+                },
+            }),
+            comment.attachments?.length
+                ? S3Service.deleteFiles({ SubKeys: comment.attachments })
+                : undefined,
+        ]);
         return successHandler({ res, message: "Comment Deleted Successfully!" });
     };
 }

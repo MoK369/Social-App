@@ -45,6 +45,11 @@ class CommentValidator {
             }
         }),
     };
+    static getCommentById = {
+        params: z.strictObject({
+            commentId: generalValidationFields.objectId,
+        }),
+    };
     static reployOnComment = {
         params: this.createComment.params.extend({
             commentId: generalValidationFields.objectId,

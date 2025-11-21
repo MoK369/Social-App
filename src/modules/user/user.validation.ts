@@ -114,6 +114,12 @@ class UserValidators {
     params: this.acceptFriendRequest.params.extend({}),
   };
 
+  static unFriend = {
+    params: z.strictObject({
+      friendId: generalValidationFields.objectId,
+    }),
+  };
+
   static confirmTwoFactor = {
     body: z.strictObject({
       otp: generalValidationFields.otp,

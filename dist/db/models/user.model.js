@@ -63,7 +63,9 @@ userSchema.methods.toJSON = function () {
     }
     return {
         id: this._id,
-        fullName: `${restObj.firstName} ${restObj.lastName}`,
+        fullName: restObj.firstName
+            ? `${restObj.firstName} ${restObj.lastName}`
+            : undefined,
         email: restObj.email,
         phone: restObj.phone,
         gender: restObj.gender,

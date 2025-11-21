@@ -33,6 +33,7 @@ export enum EmailEventsEnum {
   enableTwoFactor = "enableTwoFactorAuth",
   loginWithTwoFactor = "loginWithTwoFactor",
   tagNotifyingEmail = "tagNotifyingEmail",
+  unfriendNotifyingEmail = "unfriendNotifyingEmail",
 }
 
 export enum S3EventsEnum {
