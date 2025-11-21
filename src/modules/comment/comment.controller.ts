@@ -36,4 +36,31 @@ commentRouter.post(
   commentService.repylOnComment
 );
 
+commentRouter.patch(
+  "/:commentId",
+  Auths.authenticationMiddleware(),
+  CloudMulter.handleArrayFilesUpload({
+    fieldName: "attachments",
+    maxCount: 2,
+    maxFileSize: 5 * 1024 * 1024,
+    validation: fileValidation.image,
+  }),
+  validationMiddleware(CommentValidator.updateComment),
+  commentService.updateComment
+);
+
+commentRouter.patch(
+  "/:commentId/freeze",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(CommentValidator.freezeComment),
+  commentService.freezeComment
+);
+
+commentRouter.delete(
+  "/:commentId/delete",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(CommentValidator.deleteComment),
+  commentService.deleteComment
+);
+
 export default commentRouter;

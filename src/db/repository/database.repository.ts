@@ -47,7 +47,7 @@ abstract class DatabaseRepository<TDocument> {
     filter?: RootFilterQuery<TDocument>;
     projection?: ProjectionType<TDocument>;
     options?: FindFunctionOptionsType<TDocument, TLean>;
-  }={}): Promise<FindFunctionsReturnType<TDocument, TLean>[]> => {
+  } = {}): Promise<FindFunctionsReturnType<TDocument, TLean>[]> => {
     return this.model.find(filter, projection, options);
   };
 
@@ -77,7 +77,7 @@ abstract class DatabaseRepository<TDocument> {
     const data = await this.model.find(filter, projection, options);
 
     return {
-      docsCount,
+      totalCount: docsCount,
       totalPages,
       currentPage: page !== "all" ? page : undefined,
       size: page !== "all" ? size : undefined,
@@ -188,6 +188,16 @@ abstract class DatabaseRepository<TDocument> {
     options?: MongooseBaseQueryOptions<TDocument>;
   }): Promise<DeleteResult> => {
     return this.model.deleteOne(filter, options);
+  };
+
+  deleteMany = async ({
+    filter = {},
+    options = {},
+  }: {
+    filter?: RootFilterQuery<TDocument>;
+    options?: MongooseBaseQueryOptions<TDocument>;
+  }): Promise<DeleteResult> => {
+    return this.model.deleteMany(filter, options);
   };
 
   findOneAndDelete = async <TLean extends boolean = false>({

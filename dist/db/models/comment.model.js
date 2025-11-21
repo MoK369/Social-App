@@ -44,6 +44,7 @@ const commentSchema = new mongoose.Schema({
     restored: atByObjectSchema,
 }, {
     timestamps: true,
+    strictQuery: true,
     toObject: { virtuals: true },
     toJSON: { virtuals: true },
 });

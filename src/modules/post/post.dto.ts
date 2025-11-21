@@ -23,3 +23,11 @@ export type LikePostQueryDtoType = z.infer<
 export type GetPostListQueryDtoType = z.infer<
   typeof PostValidators.getPostList.query
 >;
+
+export type FreezePostParamsDtoType = z.infer<
+  typeof PostValidators.freezePost.params
+>;
+
+export type DeletePostParamsDtoType = z.infer<
+  typeof PostValidators.deletePost.params
+>;

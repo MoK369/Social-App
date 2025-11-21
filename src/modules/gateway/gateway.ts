@@ -6,11 +6,11 @@ import ChatGateway from "../chat/chat.gateway.ts";
 
 export const connectedSockets = new Map<string, string[]>();
 
-//let io!: Server;
+export let io!: Server;
 
 export const initializeIo = (httpServer: HttpServer): void => {
   // Start IO server
-  const io = new Server(httpServer, {
+  io = new Server(httpServer, {
     cors: {
       origin: "*",
     },

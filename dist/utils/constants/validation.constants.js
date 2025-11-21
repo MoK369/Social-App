@@ -3,6 +3,7 @@ import { Buffer } from "buffer";
 import fileValidation from "../multer/file_validation.multer.js";
 import { Types } from "mongoose";
 import { StorageTypesEnum } from "./enum.constants.js";
+import Stream from "stream";
 const generalValidationFields = {
     objectId: z.string().refine((value) => {
         return Types.ObjectId.isValid(value);
@@ -23,13 +24,14 @@ const generalValidationFields = {
     otp: z
         .string()
         .regex(/^\d{6}$/, { error: "OTP must consists only of 6 digits" }),
-    fileKeys: function ({ storageApproach, fieldName, mimetype, maxSize, }) {
+    fileKeys: function ({ storageApproach = StorageTypesEnum.memory, fieldName, mimetype, maxSize, }) {
         return z
             .strictObject({
             fieldname: z.string(),
             originalname: z.string(),
             encoding: z.string(),
             mimetype: z.string(),
+            stream: z.instanceof(Stream.Readable).optional(),
             basePath: z
                 .string()
                 .optional()

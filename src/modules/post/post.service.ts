@@ -1,9 +1,15 @@
 import type { Request, Response } from "express";
 import successHandler from "../../utils/handlers/success.handler.ts";
-import { UserRepository, PostRepository } from "../../db/repository/index.ts";
-import { UserModel, PostModel } from "../../db/models/index.ts";
+import {
+  UserRepository,
+  PostRepository,
+  CommentRepository,
+} from "../../db/repository/index.ts";
+import { UserModel, PostModel, CommentModel } from "../../db/models/index.ts";
 import type {
   CreatePostBodyDtoType,
+  DeletePostParamsDtoType,
+  FreezePostParamsDtoType,
   GetPostListQueryDtoType,
   LikePostParamsDtoType,
   LikePostQueryDtoType,
@@ -12,6 +18,7 @@ import type {
 } from "./post.dto.ts";
 import {
   BadRequestException,
+  ForbiddenException,
   NotFoundException,
 } from "../../utils/exceptions/custom.exceptions.ts";
 import { generateAlphaNumaricId } from "../../utils/security/id.security.ts";
@@ -21,15 +28,18 @@ import {
   AllowCommentsEnum,
   AvailabilityEnum,
   LikeActionsEnum,
+  UserRoleEnum,
 } from "../../utils/constants/enum.constants.ts";
 import { postFilterBasedOnAvailability } from "../../utils/filter/post.filter.ts";
 import type { IGetPostListResponse } from "./post.entity.ts";
 import type { IPaginationPostResult } from "../../utils/constants/interface.constants.ts";
+import { connectedSockets, io } from "../gateway/gateway.ts";
+import type { FullIUser } from "../../db/interfaces/user.interface.ts";
 
 class PostService {
   private _postRepository = new PostRepository(PostModel);
   private _userRepository = new UserRepository(UserModel);
-  //private _commentRepository = new CommentRepository(CommentModel);
+  private _commentRepository = new CommentRepository(CommentModel);
 
   createPost = async (req: Request, res: Response): Promise<Response> => {
     const { content, attachments, allowComments, availability, tags } = req
@@ -114,6 +124,16 @@ class PostService {
     if (!post) {
       throw new NotFoundException(
         "invalid postId, invalid user account, or post doens't exit"
+      );
+    }
+
+    if (action !== LikeActionsEnum.unlike) {
+      io.to(connectedSockets.get(post.createdBy.toString()) || []).emit(
+        "likePost",
+        {
+          postId,
+          userId: req.user!._id!,
+        }
       );
     }
 
@@ -221,12 +241,6 @@ class PostService {
       }
     }
 
-    if (removedAttachments?.length) {
-      await S3Service.deleteFiles({
-        SubKeys: removedAttachments,
-      });
-    }
-
     return successHandler({ res });
   };
 
@@ -275,6 +289,83 @@ class PostService {
       res,
       body: paginationResult,
     });
+  };
+
+  freezePost = async (req: Request, res: Response): Promise<Response> => {
+    const { postId } = req.params as FreezePostParamsDtoType;
+
+    const post = await this._postRepository.findOne({
+      filter: {
+        _id: postId,
+      },
+    });
+
+    if (!post) {
+      throw new NotFoundException("Invalid postId or already freezed");
+    }
+
+    if (
+      req.user!.role! === UserRoleEnum.USER &&
+      !post.createdBy.equals(req.user!._id!)
+    ) {
+      throw new ForbiddenException("Not authorized to freeze this post");
+    }
+
+    await post.updateOne({ freezed: { at: new Date(), by: req.user!._id! } });
+
+    return successHandler({ res, message: "Post Freezed Successfully!" });
+  };
+
+  deletePost = async (req: Request, res: Response): Promise<Response> => {
+    const { postId } = req.params as DeletePostParamsDtoType;
+
+    const post = await this._postRepository.findOne({
+      filter: {
+        _id: postId,
+        paranoid: false,
+        freezed: { $exists: true },
+      },
+      options: {
+        populate: [
+          {
+            path: "freezed.by",
+            select: "role",
+          },
+        ],
+      },
+    });
+
+    console.log(post);
+
+    if (!post) {
+      throw new NotFoundException("Invalid postId or not freezed");
+    }
+
+    const freezedBy = post.freezed!.by as unknown as FullIUser;
+
+    if (
+      (req.user!.role! === UserRoleEnum.USER &&
+        !freezedBy._id.equals(req.user!._id!)) ||
+      (req.user!.role! !== UserRoleEnum.SUPERADMIN &&
+        freezedBy.role! === UserRoleEnum.SUPERADMIN)
+    ) {
+      throw new ForbiddenException("Not authorized to delete this post");
+    }
+
+    await post.deleteOne();
+    await this._commentRepository.deleteMany({
+      filter: {
+        postId: post._id,
+      },
+    });
+
+    if (post.attachments?.length) {
+      await S3Service.deleteFolderByPrefix({
+        FolderPath: `users/${post.createdBy}/posts/${post.assetsFolderId}`,
+      });
+    }
+
+    return successHandler({ res, message: "Post Deleted Successfully!" });
   };
 }
 

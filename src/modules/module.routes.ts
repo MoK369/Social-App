@@ -3,6 +3,8 @@ import type { Request, Response } from "express";
 import { authRouter } from "./auth/index.ts";
 import { userRouter } from "./user/index.ts";
 import { postRouter } from "./post/index.ts";
+import { chatRouter } from "./chat/index.ts";
+import { commentRouter } from "./comment/index.ts";
 
 const modulesRouter = Router();
 
@@ -15,5 +17,7 @@ modulesRouter.get("/", (req: Request, res: Response) => {
 modulesRouter.use("/auth", authRouter);
 modulesRouter.use("/user", userRouter);
 modulesRouter.use("/post", postRouter);
+modulesRouter.use("/chat", chatRouter);
+modulesRouter.use("/comment", commentRouter);
 
 export default modulesRouter;

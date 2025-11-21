@@ -54,6 +54,7 @@ const commentSchema = new mongoose.Schema<IComment>(
   },
   {
     timestamps: true,
+    strictQuery: true,
     toObject: { virtuals: true },
     toJSON: { virtuals: true },
   }
@@ -110,7 +111,6 @@ commentSchema.virtual("reply", {
   ref: ModelsNames.commentModel,
   justOne: true,
 });
-
 
 const CommentModel =
   (mongoose.models.Comment as Model<IComment>) ||

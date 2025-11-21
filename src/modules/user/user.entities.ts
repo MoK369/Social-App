@@ -1,7 +1,10 @@
-import type { FlattenMaps } from "mongoose";
-import type { IUser } from "../../db/interfaces/user.interface.ts";
+import type { HIUser } from "../../db/interfaces/user.interface.ts";
+import type { HIChat } from "../../db/interfaces/chat.interface.ts";
 
-export type ProfileResponseType = FlattenMaps<IUser>;
+export interface ProfileResponseType {
+  user: HIUser;
+  groups: (HIChat | null)[];
+}
 
 export interface IProfileImageResponse {
   url: string;

@@ -31,11 +31,11 @@ const validationMiddleware = (schema: ZodSchemaType) => {
       details: [],
     };
     for (const key of Object.keys(schema) as KeyReqType[]) {
-      console.log(key);      
-      
+      console.log(key);
+
       if (!schema[key]) continue;
       console.log(req[key]);
-      
+
       const validationResult = await schema[key].safeParseAsync(req[key]);
       if (!validationResult.success) {
         validationError.details.push(

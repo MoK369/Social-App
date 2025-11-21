@@ -77,6 +77,18 @@ abstract class PostValidators {
     }),
   };
 
+  static freezePost = {
+    params: z.strictObject({
+      postId: generalValidationFields.objectId,
+    }),
+  };
+
+  static deletePost = {
+    params: z.strictObject({
+      postId: generalValidationFields.objectId,
+    }),
+  };
+
   static updatePost = {
     params: z.strictObject({
       postId: generalValidationFields.objectId,

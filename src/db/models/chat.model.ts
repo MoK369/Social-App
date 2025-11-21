@@ -1,6 +1,13 @@
-import mongoose from "mongoose";
-import type { IChat, IMessage } from "../interfaces/chat.interface.ts";
+import type {
+  FullIMessage,
+  HIChat,
+  HIMessage,
+  IChat,
+  IMessage,
+} from "../interfaces/chat.interface.ts";
 import ModelsNames from "../../utils/constants/models_names.constants.ts";
+import KeyUtil from "../../utils/multer/key.multer.ts";
+import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema<IMessage>(
   {
@@ -12,6 +19,15 @@ const messageSchema = new mongoose.Schema<IMessage>(
   },
   { timestamps: true }
 );
+
+messageSchema.methods.toJSON = function () {
+  const { _id, ...restObject } = (this as HIMessage).toObject();
+
+  return {
+    id: _id,
+    ...restObject,
+  };
+};
 
 const chatSchema = new mongoose.Schema<IChat>(
   {
@@ -30,7 +46,7 @@ const chatSchema = new mongoose.Schema<IChat>(
     groupName: {
       type: String,
       minLength: 5,
-      maxLength: 100,
+      maxLength: 500,
     },
     groupImage: String,
     roomId: {
@@ -47,6 +63,40 @@ const chatSchema = new mongoose.Schema<IChat>(
     timestamps: true,
   }
 );
+
+chatSchema.methods.toJSON = function () {
+  const { _id, ...restObject } = (this as HIChat).toObject();
+
+  const newMessages = [];
+  if (restObject.messages?.length) {
+    for (let message of restObject.messages) {
+      const { _id, ...restMessageObject } = message as FullIMessage;
+      newMessages.push({ id: _id, ...restMessageObject });
+    }
+  }
+
+  restObject.messages = newMessages;
+
+  return {
+    id: _id,
+    ...restObject,
+  };
+};
+
+chatSchema.set("toObject", {
+  transform: (doc, ret) => {
+    if (ret?.groupImage) {
+      ret.groupImage = KeyUtil.generateS3UploadsUrlFromSubKey({
+        req: {
+          host: process.env.HOST!,
+          protocol: process.env.PROTOCOL!,
+        },
+        subKey: ret.groupImage,
+      });
+    }
+    return ret;
+  },
+});
 
 const ChatModel =
   (mongoose.models?.Chat as mongoose.Model<IChat>) ||

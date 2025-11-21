@@ -38,7 +38,7 @@ class PostRepository extends DatabaseRepository {
         }
         console.log({ result });
         return {
-            docsCount,
+            totalCount: docsCount,
             totalPages,
             currentPage: page !== "all" ? page : undefined,
             size: page !== "all" ? size : undefined,

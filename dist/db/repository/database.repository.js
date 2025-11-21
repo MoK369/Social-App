@@ -23,7 +23,7 @@ class DatabaseRepository {
         }
         const data = await this.model.find(filter, projection, options);
         return {
-            docsCount,
+            totalCount: docsCount,
             totalPages,
             currentPage: page !== "all" ? page : undefined,
             size: page !== "all" ? size : undefined,
@@ -62,6 +62,9 @@ class DatabaseRepository {
     };
     deleteOne = async ({ filter = {}, options = {}, }) => {
         return this.model.deleteOne(filter, options);
+    };
+    deleteMany = async ({ filter = {}, options = {}, }) => {
+        return this.model.deleteMany(filter, options);
     };
     findOneAndDelete = async ({ filter = {}, options = { new: true }, }) => {
         return this.model.findOneAndDelete(filter, options);

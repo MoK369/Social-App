@@ -5,12 +5,14 @@ import {
   RevokedTokenModel,
   FriendRequestModel,
   PostModel,
+  ChatModel,
 } from "../../db/models/index.ts";
 import {
   UserRepository,
   FriendRequestRepository,
   RevokedTokenRepository,
   PostRepository,
+  ChatRespository,
 } from "../../db/repository/index.ts";
 import successHandler from "../../utils/handlers/success.handler.ts";
 import type {
@@ -60,6 +62,7 @@ import mongoose, { type Default__v, type Require_id } from "mongoose";
 
 class UserService {
   protected userRepository = new UserRepository(UserModel);
+  protected chatRepository = new ChatRespository(ChatModel);
   protected postRepository = new PostRepository(PostModel);
   protected revokedTokenRepository = new RevokedTokenRepository(
     RevokedTokenModel
@@ -145,10 +148,21 @@ class UserService {
         ],
       },
     });
+
+    const groups =
+      (await this.chatRepository.find({
+        filter: {
+          participants: { $in: [req.user!._id!] },
+          groupName: { $exists: true },
+        },
+      })) || [];
     return successHandler<ProfileResponseType>({
       res,
       message: "User Profile!",
-      body: user!,
+      body: {
+        user: user!,
+        groups,
+      },
     });
   };
 

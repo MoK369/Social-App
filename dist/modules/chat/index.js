@@ -1,1 +1,1 @@
-export { default } from "./chat.controller.js";
+export { default as chatRouter } from "./chat.controller.js";

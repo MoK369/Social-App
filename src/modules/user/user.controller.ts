@@ -7,7 +7,7 @@ import { TokenTypesEnum } from "../../utils/constants/enum.constants.ts";
 import CloudMulter from "../../utils/multer/cloud.multer.ts";
 import fileValidation from "../../utils/multer/file_validation.multer.ts";
 import userAuthorizationEndpoints from "./user.authorization.ts";
-import chatRouter from "../chat/index.ts";
+import { chatRouter } from "../chat/index.ts";
 
 const userRouter = Router();
 
@@ -17,7 +17,7 @@ userRouter.get("/", Auths.authenticationMiddleware(), userService.profile);
 
 userRouter.get(
   "/dashboard",
-  Auths.combined({accessRoles: userAuthorizationEndpoints.dashboard}),
+  Auths.combined({ accessRoles: userAuthorizationEndpoints.dashboard }),
   userService.dashboard
 );
 

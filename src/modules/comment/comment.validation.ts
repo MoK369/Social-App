@@ -62,6 +62,90 @@ abstract class CommentValidator {
     }),
     body: this.createComment.body,
   };
+
+  static updateComment = {
+    params: z.strictObject({
+      commentId: generalValidationFields.objectId,
+    }),
+    body: z
+      .strictObject({
+        content: z.string().min(2).max(20000).optional(),
+
+        attachments: z
+          .array(
+            generalValidationFields.fileKeys({
+              storageApproach: StorageTypesEnum.memory,
+              fieldName: "attachments",
+              maxSize: 5 * 1024 * 1024,
+              mimetype: fileValidation.image,
+            })
+          )
+          .max(2)
+          .optional(),
+
+        removedAttachments: z.array(z.string()).max(2).optional(),
+
+        tags: z.array(generalValidationFields.objectId).max(10).optional(),
+        removedTags: z
+          .array(generalValidationFields.objectId)
+          .max(10)
+          .optional(),
+      })
+      .superRefine((data, ctx) => {
+        if (!Object.values(data).length) {
+          ctx.addIssue({
+            code: "custom",
+            path: [""],
+            message: "All fields are empty",
+          });
+        }
+
+        if (
+          data.attachments?.length &&
+          data.attachments[0]!.fieldname !== "attachments"
+        ) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["attachments"],
+            message: "attachments field is missing",
+          });
+        }
+
+        if (
+          data.tags?.length &&
+          data.tags.length !== [...new Set(data.tags)].length
+        ) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["tags"],
+            message: "Duplication exists in tagged users",
+          });
+        }
+
+        if (
+          data.removedTags?.length &&
+          data.removedTags.length !== [...new Set(data.removedTags)].length
+        ) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["removedTags"],
+            message: "Duplication exists in remove tagged users",
+          });
+        }
+      }),
+  };
+
+  static freezeComment = {
+    params: z.strictObject({
+      commentId: generalValidationFields.objectId,
+    }),
+  };
+
+  static deleteComment = {
+    params: z.strictObject({
+      commentId: generalValidationFields.objectId,
+    }),
+  };
 }
 
 export default CommentValidator;

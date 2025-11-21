@@ -40,6 +40,13 @@ postRouter.patch(
 );
 
 postRouter.patch(
+  "/:postId/freeze",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(PostValidators.freezePost),
+  postService.freezePost
+);
+
+postRouter.patch(
   "/:postId",
   Auths.authenticationMiddleware(),
   CloudMulter.handleArrayFilesUpload({
@@ -51,5 +58,14 @@ postRouter.patch(
   validationMiddleware(PostValidators.updatePost),
   postService.updatePost
 );
+
+
+postRouter.delete(
+  "/:postId/delete",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(PostValidators.deletePost),
+  postService.deletePost
+);
+
 
 export default postRouter;

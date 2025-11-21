@@ -1,5 +1,5 @@
-import { UserModel, userSchema, RevokedTokenModel, FriendRequestModel, PostModel, } from "../../db/models/index.js";
-import { UserRepository, FriendRequestRepository, RevokedTokenRepository, PostRepository, } from "../../db/repository/index.js";
+import { UserModel, userSchema, RevokedTokenModel, FriendRequestModel, PostModel, ChatModel, } from "../../db/models/index.js";
+import { UserRepository, FriendRequestRepository, RevokedTokenRepository, PostRepository, ChatRespository, } from "../../db/repository/index.js";
 import successHandler from "../../utils/handlers/success.handler.js";
 import Token from "../../utils/security/token.security.js";
 import S3Service from "../../utils/multer/s3.service.js";
@@ -14,6 +14,7 @@ import emailEvent from "../../utils/events/email.event.js";
 import mongoose, {} from "mongoose";
 class UserService {
     userRepository = new UserRepository(UserModel);
+    chatRepository = new ChatRespository(ChatModel);
     postRepository = new PostRepository(PostModel);
     revokedTokenRepository = new RevokedTokenRepository(RevokedTokenModel);
     friendRequestRepository = new FriendRequestRepository(FriendRequestModel);
@@ -81,10 +82,19 @@ class UserService {
                 ],
             },
         });
+        const groups = (await this.chatRepository.find({
+            filter: {
+                participants: { $in: [req.user._id] },
+                groupName: { $exists: true },
+            },
+        })) || [];
         return successHandler({
             res,
             message: "User Profile!",
-            body: user,
+            body: {
+                user: user,
+                groups,
+            },
         });
     };
     profileImage = async (req, res) => {

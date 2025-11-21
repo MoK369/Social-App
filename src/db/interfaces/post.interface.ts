@@ -1,4 +1,4 @@
-import type { Types } from "mongoose";
+import type { Default__v, Require_id, Types } from "mongoose";
 import type {
   AllowCommentsEnum,
   AvailabilityEnum,
@@ -25,4 +25,5 @@ export interface IPost {
   updatedAt: Date;
 }
 
+export type FullIPost = Require_id<Default__v<IPost>>;
 export type HIPost = HydratedDocument<IPost>;

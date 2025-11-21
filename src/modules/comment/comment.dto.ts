@@ -16,3 +16,19 @@ export type ReplyOnCommentParamsDtoType = z.infer<
 export type ReplyOnCommentBodyDtoType = z.infer<
   typeof CommentValidator.reployOnComment.body
 >;
+
+export type UpdateCommentParamsDtoType = z.infer<
+  typeof CommentValidator.updateComment.params
+>;
+
+export type UpdateCommentBodyDtoType = z.infer<
+  typeof CommentValidator.updateComment.body
+>;
+
+export type FreezeCommentParamsDtoType = z.infer<
+  typeof CommentValidator.freezeComment.params
+>;
+
+export type DeleteCommentParamsDtoType = z.infer<
+  typeof CommentValidator.deleteComment.params
+>;

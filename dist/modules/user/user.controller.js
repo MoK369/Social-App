@@ -7,7 +7,7 @@ import { TokenTypesEnum } from "../../utils/constants/enum.constants.js";
 import CloudMulter from "../../utils/multer/cloud.multer.js";
 import fileValidation from "../../utils/multer/file_validation.multer.js";
 import userAuthorizationEndpoints from "./user.authorization.js";
-import chatRouter from "../chat/index.js";
+import { chatRouter } from "../chat/index.js";
 const userRouter = Router();
 userRouter.use("/:userId/chat", chatRouter);
 userRouter.get("/", Auths.authenticationMiddleware(), userService.profile);

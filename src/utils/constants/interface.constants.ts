@@ -10,11 +10,29 @@ import type {
 } from "../types/find_functions.type.ts";
 import type { FindPostCursorFunctionReturnType } from "../types/find_post_cursor_function.type.ts";
 import type { IPost } from "../../db/interfaces/post.interface.ts";
+import type Stream from "node:stream";
 
 export interface IEmailPayload extends Mail.Options {
   otp?: string;
   taggingUser?: string;
   taggedIn?: TaggedInEnum;
+}
+
+export interface IMulterFile {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  stream?: Stream.Readable | undefined;
+  size: number;
+  /** `DiskStorage` only: Directory to which this file has been uploaded. */
+  destination?: string | undefined;
+  /** `DiskStorage` only: Name of this file within `destination`. */
+  filename?: string | undefined;
+  /** `DiskStorage` only: Full path to the uploaded file. */
+  path?: string | undefined;
+  /** `MemoryStorage` only: A Buffer containing the entire file. */
+  buffer?: Buffer | undefined;
 }
 
 export interface IS3UploadPayload {
@@ -35,21 +53,20 @@ export interface IAuthSocket extends Socket {
   };
 }
 
-export interface IPaginationResult<TDocument, TLean extends LeanType = false> {
-  docsCount?: number | undefined;
-  totalPages?: number | undefined;
-  currentPage?: number | undefined;
-  size?: number | undefined;
+export interface IPaginationResult<TDocument, TLean extends LeanType = false>
+  extends IPaginationMetaData {
   data?: FindFunctionsReturnType<TDocument, TLean>[];
 }
 
-export interface IPaginationPostResult<
-  TLean extends LeanType = false
-> {
-  docsCount?: number | undefined;
+export interface IPaginationPostResult<TLean extends LeanType = false>
+  extends IPaginationMetaData {
+  data?: FindFunctionsReturnType<IPost, TLean>[];
+  result?: FindPostCursorFunctionReturnType<TLean>;
+}
+
+export interface IPaginationMetaData {
+  totalCount?: number | undefined;
   totalPages?: number | undefined;
   currentPage?: number | undefined;
   size?: number | undefined;
-  data?: FindFunctionsReturnType<IPost, TLean>[];
-  result?: FindPostCursorFunctionReturnType<TLean>;
 }
