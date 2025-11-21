@@ -12,6 +12,7 @@ export var UserRoleEnum;
 (function (UserRoleEnum) {
     UserRoleEnum["USER"] = "User";
     UserRoleEnum["ADMIN"] = "Admin";
+    UserRoleEnum["SUPERADMIN"] = "SuperAdmin";
 })(UserRoleEnum || (UserRoleEnum = {}));
 export var ErrorCodesEnum;
 (function (ErrorCodesEnum) {
@@ -32,6 +33,8 @@ export var EmailEventsEnum;
     EmailEventsEnum["resetPassword"] = "resetPassword";
     EmailEventsEnum["enableTwoFactor"] = "enableTwoFactorAuth";
     EmailEventsEnum["loginWithTwoFactor"] = "loginWithTwoFactor";
+    EmailEventsEnum["tagNotifyingEmail"] = "tagNotifyingEmail";
+    EmailEventsEnum["unfriendNotifyingEmail"] = "unfriendNotifyingEmail";
 })(EmailEventsEnum || (EmailEventsEnum = {}));
 export var S3EventsEnum;
 (function (S3EventsEnum) {
@@ -70,3 +73,24 @@ export var StorageTypesEnum;
     StorageTypesEnum["memory"] = "Memory";
     StorageTypesEnum["disk"] = "Disk";
 })(StorageTypesEnum || (StorageTypesEnum = {}));
+export var AllowCommentsEnum;
+(function (AllowCommentsEnum) {
+    AllowCommentsEnum["allow"] = "Allow";
+    AllowCommentsEnum["deny"] = "Deny";
+})(AllowCommentsEnum || (AllowCommentsEnum = {}));
+export var AvailabilityEnum;
+(function (AvailabilityEnum) {
+    AvailabilityEnum["public"] = "Public";
+    AvailabilityEnum["friends"] = "Friends";
+    AvailabilityEnum["onlyMe"] = "OnlyMe";
+})(AvailabilityEnum || (AvailabilityEnum = {}));
+export var LikeActionsEnum;
+(function (LikeActionsEnum) {
+    LikeActionsEnum["like"] = "Like";
+    LikeActionsEnum["unlike"] = "Unlike";
+})(LikeActionsEnum || (LikeActionsEnum = {}));
+export var TaggedInEnum;
+(function (TaggedInEnum) {
+    TaggedInEnum["post"] = "post";
+    TaggedInEnum["comment"] = "comment";
+})(TaggedInEnum || (TaggedInEnum = {}));

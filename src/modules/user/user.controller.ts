@@ -7,13 +7,19 @@ import { TokenTypesEnum } from "../../utils/constants/enum.constants.ts";
 import CloudMulter from "../../utils/multer/cloud.multer.ts";
 import fileValidation from "../../utils/multer/file_validation.multer.ts";
 import userAuthorizationEndpoints from "./user.authorization.ts";
-import chatRouter from "../chat/index.ts";
+import { chatRouter } from "../chat/index.ts";
 
 const userRouter = Router();
 
 userRouter.use("/:userId/chat", chatRouter);
 
 userRouter.get("/", Auths.authenticationMiddleware(), userService.profile);
+
+userRouter.get(
+  "/dashboard",
+  Auths.combined({ accessRoles: userAuthorizationEndpoints.dashboard }),
+  userService.dashboard
+);
 
 userRouter.post(
   "/logout",
@@ -70,7 +76,7 @@ userRouter.patch(
 userRouter.patch(
   "/profile-cover-images",
   Auths.authenticationMiddleware(),
-  CloudMulter.handleMultiFilesUpload({
+  CloudMulter.handleArrayFilesUpload({
     fieldName: "images",
     validation: fileValidation.image,
     maxCount: 2,
@@ -94,11 +100,25 @@ userRouter.patch(
   userService.restoreAccount
 );
 
+userRouter.patch(
+  "/:userId/change-role",
+  Auths.combined({ accessRoles: userAuthorizationEndpoints.changeRole }),
+  validationMiddleware(UserValidators.restoreAccount),
+  userService.changeRole
+);
+
 userRouter.delete(
   "/reject-friend-request/:friendRequestId",
   Auths.authenticationMiddleware(),
   validationMiddleware(UserValidators.rejectFreindRequest),
   userService.rejectFriendRequest
+);
+
+userRouter.delete(
+  "/unfriend/:friendId",
+  Auths.authenticationMiddleware(),
+  validationMiddleware(UserValidators.unFriend),
+  userService.unfriend
 );
 
 userRouter.delete(

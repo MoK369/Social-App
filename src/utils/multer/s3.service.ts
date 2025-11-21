@@ -18,6 +18,7 @@ import { StorageTypesEnum } from "../constants/enum.constants.ts";
 import { createReadStream } from "node:fs";
 import { S3Exception } from "../exceptions/custom.exceptions.ts";
 import KeyUtil from "./key.multer.ts";
+import type { IMulterFile } from "../constants/interface.constants.ts";
 
 class S3Service {
   private static _s3ClientObject = new S3Client({
@@ -39,7 +40,7 @@ class S3Service {
     Bucket?: string;
     ACL?: ObjectCannedACL;
     Path?: string;
-    File: Express.Multer.File;
+    File: IMulterFile;
   }): Promise<string> => {
     const subKey = KeyUtil.generateS3SubKey({
       Path,
@@ -52,8 +53,8 @@ class S3Service {
       Key: KeyUtil.generateS3KeyFromSubKey(subKey),
       Body:
         StorageApproach === StorageTypesEnum.memory
-          ? File.buffer
-          : createReadStream(File.path),
+          ? File.buffer!
+          : createReadStream(File.path!),
       ContentType: File.mimetype,
     });
 

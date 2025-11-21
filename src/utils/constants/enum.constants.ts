@@ -11,6 +11,7 @@ export enum GenderEnum {
 export enum UserRoleEnum {
   USER = "User",
   ADMIN = "Admin",
+  SUPERADMIN = "SuperAdmin",
 }
 
 export enum ErrorCodesEnum {
@@ -31,6 +32,8 @@ export enum EmailEventsEnum {
   resetPassword = "resetPassword",
   enableTwoFactor = "enableTwoFactorAuth",
   loginWithTwoFactor = "loginWithTwoFactor",
+  tagNotifyingEmail = "tagNotifyingEmail",
+  unfriendNotifyingEmail = "unfriendNotifyingEmail",
 }
 
 export enum S3EventsEnum {
@@ -79,4 +82,14 @@ export enum AvailabilityEnum {
   public = "Public",
   friends = "Friends",
   onlyMe = "OnlyMe",
+}
+
+export enum LikeActionsEnum {
+  like = "Like",
+  unlike = "Unlike",
+}
+
+export enum TaggedInEnum {
+  post = "post",
+  comment = "comment",
 }
