@@ -153,9 +153,6 @@ class CloudMulter {
     next: NextFunction
   ) => {
     if (err instanceof MulterError) {
-      console.log("==============");
-
-      console.log({ err });
       if (err.code == "LIMIT_FILE_SIZE")
         next(
           new ValidationException("File is too large 📁", [

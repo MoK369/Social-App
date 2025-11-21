@@ -41,10 +41,7 @@ class ChatRespository extends DatabaseRepository<TDocument> {
           },
         ])
       )[0] as { size: number }
-    ).size;
-
-    console.log({totalCount});
-    
+    ).size;    
 
     const result = await this.model.findOne(
       filter,

@@ -107,8 +107,6 @@ userSchema.methods.toJSON = function () {
 
 userSchema.set("toObject", {
   transform: (doc, ret) => {
-    console.log("inside transform of user toObject");
-
     if (ret?.profilePicture?.subKey) {
       ret.profilePicture.url = KeyUtil.generateS3UploadsUrlFromSubKey({
         req: {

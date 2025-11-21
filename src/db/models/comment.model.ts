@@ -63,7 +63,6 @@ const commentSchema = new mongoose.Schema<IComment>(
 
 // sending notifiying emails to tagged users
 commentSchema.post("save", async function () {
-  console.log({ doc: this });
   if (this.tags?.length) {
     const userRepository = new UserRepository(UserModel);
     const taggingUser = (

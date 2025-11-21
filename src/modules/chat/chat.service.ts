@@ -156,7 +156,7 @@ class ChatService {
   // IO
   sayHi = asyncSocketIoServiceHandler<ISayHiDto>(
     async ({ message, socket, io, callback }) => {
-      console.log({ message });
+      //console.log({ message });
       callback?.("Welcome front-end");
     }
   );
@@ -228,7 +228,6 @@ class ChatService {
       });
 
       socket.join(roomId);
-      console.log(`joingin roomId ${roomId}`);
 
       if (!chat) {
         throw new BadRequestException("fail to find matching room");

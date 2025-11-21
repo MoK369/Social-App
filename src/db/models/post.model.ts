@@ -66,7 +66,6 @@ const postSchema = new mongoose.Schema<IPost>(
 );
 
 postSchema.methods.toJSON = function () {
-  console.log({ post: this });
   const { _id, assetsFolderId, ...restObject } = (this as HIPost).toObject();
 
   if (restObject?.attachments) {
@@ -83,7 +82,6 @@ postSchema.methods.toJSON = function () {
 
 // sending notifiying emails to tagged users
 postSchema.post("save", async function () {
-  console.log({ doc: this });
   if (this.tags?.length) {
     const userRepository = new UserRepository(UserModel);
     const taggingUser = (

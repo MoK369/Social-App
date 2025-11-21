@@ -45,7 +45,7 @@ export const initializeIo = (httpServer: HttpServer): void => {
   const chatGateway = new ChatGateway();
   io.on("connection", (socket: IAuthSocket) => {
     socket.emit("connection_id", socket.id);
-    console.log("After connection:: ", connectedSockets);
+    //console.log("After connection:: ", connectedSockets);
 
     chatGateway.register(socket, io);
 
@@ -66,7 +66,7 @@ export const initializeIo = (httpServer: HttpServer): void => {
         connectedSockets.set(userId, userTabs);
       }
 
-      console.log(`after logout:: `, connectedSockets);
+      //console.log(`after logout:: `, connectedSockets);
     });
   }
 

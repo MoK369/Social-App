@@ -70,15 +70,12 @@ class PostRepository extends DatabaseRepository<TDocument> {
       doc != null;
       doc = await cursor.next()
     ) {
-      console.log("inside the for loop ", doc);
 
       const comments = await this._commentRepository.find({
         filter: { postId: doc!._id, commentId: { $exists: false } },
       });
       result.push({ post: doc, comments });
     }
-
-    console.log({ result });
 
     return {
       totalCount: docsCount,

@@ -198,8 +198,6 @@ class CommentService {
       },
     });
 
-    console.log({ comment });
-
     if (
       !comment?.postId ||
       (comment.postId as unknown as FullIPost).createdBy === null
@@ -235,8 +233,6 @@ class CommentService {
         }/comments`,
       });
     }
-
-    console.log({ attachmentsSubKeys });
 
     await this._commentRepository
       .create({
@@ -294,12 +290,6 @@ class CommentService {
           },
         ],
       },
-    });
-
-    console.log({ comment });
-    console.log({ commntId: comment?.commentId });
-    console.log({
-      commntId: comment?.commentId === null,
     });
 
     if (!comment) throw new NotFoundException("comment not Found");
