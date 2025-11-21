@@ -1,5 +1,5 @@
-import UserRepository from "../../db/repository/user.respository.js";
-import { UserModel } from "../../db/models/user.model.js";
+import { UserRepository } from "../../db/repository/index.js";
+import { UserModel } from "../../db/models/index.js";
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException, } from "../../utils/exceptions/custom.exceptions.js";
 import successHandler from "../../utils/handlers/success.handler.js";
 import Hashing from "../../utils/security/hash.security.js";
@@ -76,7 +76,9 @@ class AuthenticationService {
     };
     resendEmilOtp = async (req, res) => {
         const { email } = req.body;
-        const user = await this.userRepository.findByEmail({ email });
+        const user = await this.userRepository.findOne({
+            filter: { email, freezed: { $exists: false } },
+        });
         const count = OTP.checkRequestOfNewOTP({ user });
         const otp = generateNumericId();
         await this.userRepository.updateOne({

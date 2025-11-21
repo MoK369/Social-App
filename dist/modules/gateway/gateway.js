@@ -3,8 +3,9 @@ import { Server } from "socket.io";
 import Token from "../../utils/security/token.security.js";
 import ChatGateway from "../chat/chat.gateway.js";
 export const connectedSockets = new Map();
+export let io;
 export const initializeIo = (httpServer) => {
-    const io = new Server(httpServer, {
+    io = new Server(httpServer, {
         cors: {
             origin: "*",
         },

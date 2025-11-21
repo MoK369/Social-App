@@ -1,8 +1,9 @@
-import type { HydratedDocument, Types } from "mongoose";
+import type { Default__v, HydratedDocument, Require_id, Types } from "mongoose";
 import type {
   GenderEnum,
   UserRoleEnum,
 } from "../../utils/constants/enum.constants.ts";
+import type { IAtByObject, ICodExpireCoundObject } from "./common.interface.ts";
 
 export interface IUser {
   id: Types.ObjectId;
@@ -12,28 +13,16 @@ export interface IUser {
   fullName?: string; // virtual
 
   email: string;
-  confirmEmailOtp?: {
-    code: string;
-    expiresAt: Date;
-    count?: number;
-  };
+  confirmEmailOtp?: ICodExpireCoundObject;
   confirmedAt?: Date;
 
   password: string;
-  resetPasswordOtp?: {
-    code: string;
-    expiresAt: Date;
-    count?: number;
-  };
+  resetPasswordOtp?: ICodExpireCoundObject;
   resetPasswordVerificationExpiresAt?: Date;
   lastResetPasswordAt?: Date;
 
   twoFactorEnabledAt?: Date;
-  twoFactorOtp?: {
-    code: string;
-    expiresAt: Date;
-    count?: number;
-  };
+  twoFactorOtp?: ICodExpireCoundObject;
 
   changeCredentialsTime?: Date;
 
@@ -53,16 +42,11 @@ export interface IUser {
 
   createdAt: Date;
   updatedAt: Date;
-  freezed?: {
-    at: Date;
-    by: Types.ObjectId;
-  };
-  restored?: {
-    at: Date;
-    by: Types.ObjectId;
-  };
+  freezed?: IAtByObject;
+  restored?: IAtByObject;
 
   friends: Types.ObjectId[];
 }
 
+export type FullIUser = Require_id<Default__v<IUser>>;
 export type HIUser = HydratedDocument<IUser>;

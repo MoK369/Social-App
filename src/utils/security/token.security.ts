@@ -18,7 +18,7 @@ import {
   UnauthorizedException,
 } from "../exceptions/custom.exceptions.ts";
 import UserRepository from "../../db/repository/user.respository.ts";
-import {UserModel} from "../../db/models/user.model.ts";
+import { UserModel } from "../../db/models/user.model.ts";
 import type { ITokenPayload } from "../constants/interface.constants.ts";
 import { generateAlphaNumaricId } from "./id.security.ts";
 import RevokedTokenRepository from "../../db/repository/revoked_token.repository.ts";
@@ -64,6 +64,7 @@ class Token {
   }): SignatureLevelsEnum => {
     switch (role) {
       case UserRoleEnum.ADMIN:
+      case UserRoleEnum.SUPERADMIN:
         return SignatureLevelsEnum.System;
 
       default:
@@ -159,7 +160,7 @@ class Token {
     }
 
     const user = await this._userRepository.findOne({
-      filter: { _id: payload.id, freezed: { $exists: false } },
+      filter: { _id: payload.id },
     });
     if (!user?.confirmedAt) {
       throw new BadRequestException("Invalid Account!");

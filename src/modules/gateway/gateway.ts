@@ -6,11 +6,11 @@ import ChatGateway from "../chat/chat.gateway.ts";
 
 export const connectedSockets = new Map<string, string[]>();
 
-//let io!: Server;
+export let io!: Server;
 
 export const initializeIo = (httpServer: HttpServer): void => {
   // Start IO server
-  const io = new Server(httpServer, {
+  io = new Server(httpServer, {
     cors: {
       origin: "*",
     },
@@ -45,7 +45,7 @@ export const initializeIo = (httpServer: HttpServer): void => {
   const chatGateway = new ChatGateway();
   io.on("connection", (socket: IAuthSocket) => {
     socket.emit("connection_id", socket.id);
-    console.log("After connection:: ", connectedSockets);
+    //console.log("After connection:: ", connectedSockets);
 
     chatGateway.register(socket, io);
 
@@ -66,7 +66,7 @@ export const initializeIo = (httpServer: HttpServer): void => {
         connectedSockets.set(userId, userTabs);
       }
 
-      console.log(`after logout:: `, connectedSockets);
+      //console.log(`after logout:: `, connectedSockets);
     });
   }
 

@@ -13,6 +13,14 @@ export type RestoreAccountParamsTypeDto = z.infer<
   typeof UserValidation.restoreAccount.params
 >;
 
+export type ChangeRoleParamsTypeDto = z.infer<
+  typeof UserValidation.changeRole.params
+>;
+
+export type ChangeRoleBodyTypeDto = z.infer<
+  typeof UserValidation.changeRole.body
+>;
+
 export type DeleteAccountParamsTypeDto = z.infer<
   typeof UserValidation.deleteAccount.params
 >;
@@ -27,6 +35,10 @@ export type AcceptFriendRequestParamsTypeDto = z.infer<
 
 export type RejectFriendRequestParamsTypeDto = z.infer<
   typeof UserValidation.rejectFreindRequest.params
+>;
+
+export type UnfriendParamsTypeDto = z.infer<
+  typeof UserValidation.unFriend.params
 >;
 
 export type ConfirmTwoFactorBodyTypeDto = z.infer<

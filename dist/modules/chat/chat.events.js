@@ -12,5 +12,15 @@ class ChatEvents {
             this.chatService.sendMessage({ ...data, socket, io });
         });
     };
+    joinRoom = (socket, io) => {
+        socket.on("join_room", (data) => {
+            this.chatService.joinRoom({ ...data, socket, io });
+        });
+    };
+    sendGroupMessage = (socket, io) => {
+        socket.on("sendGroupMessage", (data) => {
+            this.chatService.sendGroupMessage({ ...data, socket, io });
+        });
+    };
 }
 export default ChatEvents;

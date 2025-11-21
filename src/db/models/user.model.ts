@@ -8,6 +8,10 @@ import EncryptionSecurityUtil from "../../utils/security/encryption.security.ts"
 import Hashing from "../../utils/security/hash.security.ts";
 import ModelsNames from "../../utils/constants/models_names.constants.ts";
 import KeyUtil from "../../utils/multer/key.multer.ts";
+import {
+  atByObjectSchema,
+  codeExpireCountObjectSchema,
+} from "./common.model.ts";
 
 export const userSchema = new mongoose.Schema<IUser>(
   {
@@ -15,28 +19,16 @@ export const userSchema = new mongoose.Schema<IUser>(
     lastName: { type: String, required: true, minlength: 2, maxlength: 25 },
 
     email: { type: String, required: true, unique: true },
-    confirmEmailOtp: {
-      code: { type: String },
-      expiresAt: { type: Date },
-      count: { type: Number, default: 0 },
-    },
+    confirmEmailOtp: codeExpireCountObjectSchema,
     confirmedAt: { type: Date },
 
     password: { type: String, required: true },
-    resetPasswordOtp: {
-      code: { type: String },
-      expiresAt: { type: Date },
-      count: { type: Number, default: 0 },
-    },
+    resetPasswordOtp: codeExpireCountObjectSchema,
     resetPasswordVerificationExpiresAt: { type: Date },
     lastResetPasswordAt: { type: Date },
 
     twoFactorEnabledAt: Date,
-    twoFactorOtp: {
-      code: { type: String, required: true },
-      expiresAt: { type: Date, required: true },
-      count: { type: Number, default: 0 },
-    },
+    twoFactorOtp: codeExpireCountObjectSchema,
 
     changeCredentialsTime: { type: Date },
 
@@ -60,14 +52,8 @@ export const userSchema = new mongoose.Schema<IUser>(
       enum: Object.values(UserRoleEnum),
       default: UserRoleEnum.USER,
     },
-    freezed: {
-      at: Date,
-      by: { type: mongoose.Types.ObjectId, ref: ModelsNames.userModel },
-    },
-    restored: {
-      at: Date,
-      by: { type: mongoose.Types.ObjectId, ref: ModelsNames.userModel },
-    },
+    freezed: atByObjectSchema,
+    restored: atByObjectSchema,
 
     friends: {
       type: [mongoose.Schema.Types.ObjectId],
@@ -76,6 +62,7 @@ export const userSchema = new mongoose.Schema<IUser>(
   },
   {
     timestamps: true,
+    strictQuery: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
@@ -102,7 +89,9 @@ userSchema.methods.toJSON = function () {
 
   return {
     id: this._id,
-    fullName: `${restObj.firstName} ${restObj.lastName}`,
+    fullName: restObj.firstName
+      ? `${restObj.firstName} ${restObj.lastName}`
+      : undefined,
     email: restObj.email,
     phone: restObj.phone,
     gender: restObj.gender,
@@ -172,6 +161,17 @@ userSchema.post("init", async function () {
   if (this.phone && EncryptionSecurityUtil.isEncrypted({ text: this.phone })) {
     this.phone = EncryptionSecurityUtil.decryptText({ cipherText: this.phone });
   }
+});
+
+userSchema.pre(["find", "findOne"], function (next) {
+  const query = this.getQuery();
+  if (query.paranoid === false) {
+    this.setQuery({ ...query });
+  } else {
+    this.setQuery({ ...query, freezed: { $exists: false } });
+  }
+
+  next();
 });
 
 export const UserModel =
