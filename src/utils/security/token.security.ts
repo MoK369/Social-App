@@ -204,9 +204,9 @@ class Token {
           .create({
             data: [
               {
-                jti: tokenPayload!.jti!,
+                jti: tokenPayload.jti!,
                 expiresIn:
-                  tokenPayload!.iat! +
+                  tokenPayload.iat! +
                   Number(process.env.REFRESH_TOKEN_EXPIRES_IN),
                 userId,
               },

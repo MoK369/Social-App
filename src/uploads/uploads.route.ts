@@ -41,7 +41,7 @@ uploadsRouter.get(
     const SubKey = path.join("/");
 
     const s3Response = await S3Service.getFile({ SubKey });
-    if (!s3Response.Body) {
+    if (!s3Response?.Body) {
       throw new BadRequestException("Failed to fetch this asset ☹️");
     }
 
