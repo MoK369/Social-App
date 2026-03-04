@@ -227,9 +227,3 @@ The app will automatically watch TS files using **tsc-watch**.
 ISC
 
 ***
-
-## 🙌 Author
-
-Backend Diploma Project by **YOU** (Your Name Here)
-
-***
